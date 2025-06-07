@@ -1,0 +1,18 @@
+<settings-container xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+                    xsi:noNamespaceSchemaLocation='https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'>
+    <toggle-setting value="FlipNoteColors" apply-on-change="true"
+                    text="Flip Note Color Preference"
+                    hover-hint="By default, darker colors are placed on the right. This places them on the left."/>
+    <toggle-setting value="FlipLightColors" apply-on-change="true"
+                    text="Flip Light Color Preference"
+                    hover-hint="By default, darker colors are placed on the right. This places them on the left."/>
+    <toggle-setting value="FlipBoostColors" apply-on-change="true"
+                    text="Flip Boost Color Preference"
+                    hover-hint="By default, darker colors are placed on the right. This places them on the left."/>
+
+    <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
+    
+    <toggle-setting value="FlipLightSchemes" apply-on-change="true"
+                    text="Flip Light Scheme Preference"
+                    hover-hint="By default, the more vibrant light colors are given to boost lights. This gives them to the standard lights."/>
+</settings-container>

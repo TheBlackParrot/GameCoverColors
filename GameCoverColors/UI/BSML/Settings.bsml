@@ -1,0 +1,71 @@
+<vertical xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:noNamespaceSchemaLocation='https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'
+          child-expand-height="false" child-align="UpperCenter">
+    <toggle-setting value="Enabled" text="Enabled"
+                    apply-on-change="true"/>
+
+    <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
+    
+    <horizontal bg="round-rect-panel" bg-color="#FFFFFF"
+                child-expand-width="false" child-expand-height="false"
+                child-control-width="true" child-control-height="true"
+                vertical-fit="PreferredSize" preferred-height="7"
+                horizontal-fit="PreferredSize" preferred-width="35"
+                pad="2" spacing="2" child-align="MiddleCenter">
+        <horizontal spacing="0">
+            <image id="saberACircle" src="#SmallFullCircle"
+                   preserve-aspect="true" pref-height="5" pref-width="5"
+                   hover-hint="Left Saber"/>
+            <image id="saberBCircle" src="#SmallFullCircle"
+                   preserve-aspect="true" pref-height="5" pref-width="5"
+                   hover-hint="Right Saber"/>
+        </horizontal>
+        
+        <horizontal spacing="0">
+            <image id="lightACircle" src="#SmallFullCircle"
+                   preserve-aspect="true" pref-height="5" pref-width="5"
+                   hover-hint="Standard Lights"/>
+            <image id="lightBCircle" src="#SmallFullCircle"
+                   preserve-aspect="true" pref-height="5" pref-width="5"
+                   hover-hint="Standard Lights"/>
+        </horizontal>
+        
+        <horizontal spacing="0">
+            <image id="boostACircle" src="#SmallFullCircle"
+                   preserve-aspect="true" pref-height="5" pref-width="5"
+                   hover-hint="Boost Lights"/>
+            <image id="boostBCircle" src="#SmallFullCircle"
+                   preserve-aspect="true" pref-height="5" pref-width="5"
+                   hover-hint="Boost Lights"/>
+        </horizontal>
+    </horizontal>
+    
+    <button text="Refresh" on-click="RefreshSettings"/>
+
+    <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
+
+    <!-- list-slider-setting has a bug where it forces the formatter as a 0.0-formatted float with centimeters. idk either -->
+    <slider-setting value="KernelSize" text="Kernel Size"
+                    integer-only="true" min="0" max="8" increment="1"
+                    show-buttons="true" formatter="KernelSizeFormatter"
+                    hover-hint="Strength of the color averaging"
+                    apply-on-change="true"/>
+    <slider-setting value="DownsampleFactor" text="Downsample Factor"
+                    integer-only="true" min="0" max="6" increment="1"
+                    show-buttons="true"
+                    hover-hint="Lower values will get closer representations of visible color, higher values will average them closer"
+                    apply-on-change="true"/>
+    <slider-setting value="PaletteSize" text="Palette Size"
+                    integer-only="true" min="6" max="32" increment="1"
+                    show-buttons="true"
+                    hover-hint="Size of the palette colors can be chosen from"
+                    apply-on-change="true"/>
+
+    <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
+
+    <slider-setting value="MinimumContrastDifference" text="Min. Note Contrast Diff."
+                    integer-only="true" min="0" max="600" increment="10"
+                    show-buttons="true" formatter="ContrastFormatter"
+                    hover-hint="The difference in contrast between note colors that will (usually) be maintained"
+                    apply-on-change="true"/>
+</vertical>

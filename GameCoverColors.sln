@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameCoverColors", "GameCoverColors\GameCoverColors.csproj", "{AB965B18-1EC7-4A4E-B5E9-D1287DF6F2FB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release-1.39.1|Any CPU = Release-1.39.1|Any CPU
+		Debug-1.40.3|Any CPU = Debug-1.40.3|Any CPU
+		Debug-1.39.1|Any CPU = Debug-1.39.1|Any CPU
+		Release-1.40.3|Any CPU = Release-1.40.3|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB965B18-1EC7-4A4E-B5E9-D1287DF6F2FB}.Release-1.39.1|Any CPU.ActiveCfg = Release-1.39.1|Any CPU
+		{AB965B18-1EC7-4A4E-B5E9-D1287DF6F2FB}.Release-1.39.1|Any CPU.Build.0 = Release-1.39.1|Any CPU
+		{AB965B18-1EC7-4A4E-B5E9-D1287DF6F2FB}.Debug-1.40.3|Any CPU.ActiveCfg = Debug-1.40.3|Any CPU
+		{AB965B18-1EC7-4A4E-B5E9-D1287DF6F2FB}.Debug-1.40.3|Any CPU.Build.0 = Debug-1.40.3|Any CPU
+		{AB965B18-1EC7-4A4E-B5E9-D1287DF6F2FB}.Debug-1.39.1|Any CPU.ActiveCfg = Debug-1.39.1|Any CPU
+		{AB965B18-1EC7-4A4E-B5E9-D1287DF6F2FB}.Debug-1.39.1|Any CPU.Build.0 = Debug-1.39.1|Any CPU
+		{AB965B18-1EC7-4A4E-B5E9-D1287DF6F2FB}.Release-1.40.3|Any CPU.ActiveCfg = Release-1.40.3|Any CPU
+		{AB965B18-1EC7-4A4E-B5E9-D1287DF6F2FB}.Release-1.40.3|Any CPU.Build.0 = Release-1.40.3|Any CPU
+	EndGlobalSection
+EndGlobal
