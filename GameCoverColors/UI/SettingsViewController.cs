@@ -52,7 +52,16 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     [UIComponent("lightBCircle")] private ImageView? _lightBCircle = null;
     [UIComponent("boostACircle")] private ImageView? _boostACircle = null;
     [UIComponent("boostBCircle")] private ImageView? _boostBCircle = null;
+    
+    [UIComponent("ModalToLetPeopleKnowThingHappened")]
+    private ModalView? _modalToLetPeopleKnowThingHappened = null;
     // ReSharper restore FieldCanBeMadeReadOnly.Local
+
+    [UIAction("ShowModalThing")]
+    private void ShowModalThing()
+    {
+        _modalToLetPeopleKnowThingHappened?.Show(true, true);
+    }
 
     private SettingsViewController(GameplaySetup gameplaySetup,
         GameplaySetupViewController gameplaySetupViewController,
@@ -126,6 +135,8 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
         {
             Plugin.Log.Error(e);
         }
+
+        ShowModalThing();
     }
 
     protected bool Enabled

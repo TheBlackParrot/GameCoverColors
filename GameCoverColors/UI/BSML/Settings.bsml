@@ -72,4 +72,18 @@
                     show-buttons="true" formatter="ContrastFormatter"
                     hover-hint="The difference in contrast between note colors that will (usually) be maintained"
                     apply-on-change="true" bind-value="true"/>
+    
+    <modal id="ModalToLetPeopleKnowThingHappened" hide-event="HideModalThing"
+           move-to-center="true" clickerino-offerino-closerino="true" size-delta="40 20">
+        <vertical pad="1" spacing="0" child-align="MiddleCenter"
+                  horizontal-fit="PreferredSize" preferred-width="40"
+                  vertical-fit="Unconstrained" child-control-height="true"
+                  background="round-rect-panel" bg-color="#FFFFFF">
+            <text text="Saved color overrides" word-wrapping="true" rich-text="false"
+                  font-align="Center" font-size="4" color="#FFFFFF"/>
+            <horizontal>
+                <button text="OK" click-event="HideModalThing"/>
+            </horizontal>
+        </vertical>
+    </modal>
 </vertical>
