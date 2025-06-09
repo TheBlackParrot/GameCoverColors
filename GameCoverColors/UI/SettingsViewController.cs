@@ -1,5 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.GameplaySetup;
 using GameCoverColors.Configuration;
@@ -12,9 +17,24 @@ using Zenject;
 namespace GameCoverColors.UI;
 
 [UsedImplicitly]
-internal class SettingsViewController : IInitializable, IDisposable
+internal class SettingsViewController : IInitializable, IDisposable, INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+    private void NotifyPropertyChanged([CallerMemberName] string? propertyName = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    internal void NotifyPropertiesChanged()
+    {
+        PropertyInfo[] properties = typeof(SavedConfig).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).ToArray();
+        // ReSharper disable once EntityNameCapturedOnly.Local
+        foreach (PropertyInfo property in properties)
+        {
+            NotifyPropertyChanged(property.Name);   
+        }
+    }
+    
     private static PluginConfig Config => PluginConfig.Instance;
+    private static SavedConfig? SavedConfigInstance => SchemeManager.SavedConfigInstance;
     internal static SettingsViewController? Instance;
     
     private readonly GameplaySetup _gameplaySetup;
@@ -85,7 +105,27 @@ internal class SettingsViewController : IInitializable, IDisposable
         SchemeManager.BeatmapDidUpdateContent(_standardLevelDetailViewController,
             _standardLevelDetailViewController._contentIsOwnedAndReady
                 ? StandardLevelDetailViewController.ContentType.OwnedAndReady
-                : StandardLevelDetailViewController.ContentType.Loading);
+                : StandardLevelDetailViewController.ContentType.Loading, 
+            true);
+    }
+
+    [UIAction("SaveSettings")]
+    [UsedImplicitly]
+    private async Task SaveSettings()
+    {
+        if (_standardLevelDetailViewController == null)
+        {
+            return;
+        }
+
+        try
+        {
+            SchemeManager.SaveOverrides(await SchemeManager.WaitForBeatmapLoaded(_standardLevelDetailViewController));
+        }
+        catch (Exception e)
+        {
+            Plugin.Log.Error(e);
+        }
     }
 
     protected bool Enabled
@@ -93,24 +133,76 @@ internal class SettingsViewController : IInitializable, IDisposable
         get => Config.Enabled;
         set => Config.Enabled = value;
     }
+    
     protected int KernelSize
     {
-        get => Config.KernelSize;
-        set => Config.KernelSize = value;
+        get => SavedConfigInstance?.KernelSize ?? Config.KernelSize;
+        set
+        {
+            if (SavedConfigInstance == null)
+            {
+                Config.KernelSize = value;
+            }
+            else
+            {
+                SavedConfigInstance.KernelSize = value;
+            }
+            
+            NotifyPropertyChanged();
+        }
     }
+
     protected int DownsampleFactor
     {
-        get => Config.DownsampleFactor;
-        set => Config.DownsampleFactor = value;
+        get => SavedConfigInstance?.DownsampleFactor ?? Config.DownsampleFactor;
+        set
+        {
+            if (SavedConfigInstance == null)
+            {
+                Config.DownsampleFactor = value;
+            }
+            else
+            {
+                SavedConfigInstance.DownsampleFactor = value;
+            }
+            
+            NotifyPropertyChanged();
+        }
     }
+    
     protected int PaletteSize
     {
-        get => Config.PaletteSize;
-        set => Config.PaletteSize = value;
+        get => SavedConfigInstance?.PaletteSize ?? Config.PaletteSize;
+        set
+        {
+            if (SavedConfigInstance == null)
+            {
+                Config.PaletteSize = value;
+            }
+            else
+            {
+                SavedConfigInstance.PaletteSize = value;
+            }
+            
+            NotifyPropertyChanged();
+        }
     }
+    
     protected int MinimumContrastDifference
     {
-        get => Config.MinimumContrastDifference;
-        set => Config.MinimumContrastDifference = value;
+        get => SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference;
+        set
+        {
+            if (SavedConfigInstance == null)
+            {
+                Config.MinimumContrastDifference = value;
+            }
+            else
+            {
+                SavedConfigInstance.MinimumContrastDifference = value;
+            }
+
+            NotifyPropertyChanged();
+        }
     }
 }

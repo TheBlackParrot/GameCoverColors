@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using GameCoverColors.ColorThief;
 using GameCoverColors.Configuration;
 using GameCoverColors.Extensions;
 using GameCoverColors.UI;
+using IPA.Utilities;
 using IPA.Utilities.Async;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
 using SiraUtil.Affinity;
 using UnityEngine;
 using Zenject;
@@ -17,11 +22,15 @@ namespace GameCoverColors.Managers;
 [UsedImplicitly]
 internal class SchemeManager : IInitializable, IDisposable, IAffinity
 {
+    private static readonly string UserDataPath = Path.Combine(UnityGame.UserDataPath, "GameCoverColors");
+    private static readonly string OverridesPath = Path.Combine(UserDataPath, "Overrides");
+    
     private static PluginConfig Config => PluginConfig.Instance;
+    internal static SavedConfig? SavedConfigInstance;
     
     internal static ColorScheme? Colors;
     
-    private StandardLevelDetailViewController? _standardLevelDetailViewController;
+    private static StandardLevelDetailViewController? _standardLevelDetailViewController;
     private static LevelPackDetailViewController? _levelPackDetailViewController;
 
     [Inject]
@@ -34,13 +43,16 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 
     public void Initialize()
     {
+        if (!Directory.Exists(UserDataPath)) { Directory.CreateDirectory(UserDataPath); }
+        if (!Directory.Exists(OverridesPath)) { Directory.CreateDirectory(OverridesPath); }
+        
         if (_standardLevelDetailViewController == null)
         {
             Plugin.DebugMessage("_standardLevelDetailViewController is null");
             return;
         }
         
-        _standardLevelDetailViewController.didChangeContentEvent += BeatmapDidUpdateContent;
+        _standardLevelDetailViewController.didChangeContentEvent += BeatmapDidUpdateContentWrapper;
     }
     
     public void Dispose()
@@ -50,7 +62,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             return;
         }
         
-        _standardLevelDetailViewController.didChangeContentEvent -= BeatmapDidUpdateContent;
+        _standardLevelDetailViewController.didChangeContentEvent -= BeatmapDidUpdateContentWrapper;
     }
     
 #if PRE_V1_37_1
@@ -64,7 +76,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         return standardLevelDetailViewController.beatmapLevel;
     }
 #else
-    private static async Task<BeatmapLevel> WaitForBeatmapLoaded(StandardLevelDetailViewController standardLevelDetailViewController)
+    internal static async Task<BeatmapLevel> WaitForBeatmapLoaded(StandardLevelDetailViewController standardLevelDetailViewController)
     {
         while (standardLevelDetailViewController._beatmapLevel == null)
         {
@@ -122,9 +134,50 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     private static float GetYiqDifference(Color x, Color y) => Mathf.Abs(GetYiq(x) - GetYiq(y));
     private static bool SwapColors(Color x, Color y) => GetYiq(x) < GetYiq(y);
 
+    private static void LoadOverrides(BeatmapLevel beatmapLevel)
+    {
+        char[] invalidCharacters = Path.GetInvalidFileNameChars();
+        string overrideFilename = Path.Combine(OverridesPath, string.Join("", beatmapLevel.levelID.Where(c => !invalidCharacters.Contains(c))) + ".json");
+        
+        SavedConfigInstance = null;
+        
+        if (!File.Exists(overrideFilename))
+        {
+            SettingsViewController.Instance?.NotifyPropertiesChanged();
+            return;
+        }
+        
+        try
+        {
+            SavedConfigInstance = JsonConvert.DeserializeObject(File.ReadAllText(overrideFilename), typeof(SavedConfig)) as SavedConfig;
+        }
+        catch (Exception e)
+        {
+            Plugin.Log.Error(e);
+        }
+
+        SettingsViewController.Instance?.NotifyPropertiesChanged();
+    }
+
+    internal static void SaveOverrides(BeatmapLevel beatmapLevel)
+    {
+        char[] invalidCharacters = Path.GetInvalidFileNameChars();
+        string overrideFilename = Path.Combine(OverridesPath, string.Join("", beatmapLevel.levelID.Where(c => !invalidCharacters.Contains(c))) + ".json");
+        
+        Plugin.Log.Info($"Should save overrides to {overrideFilename}");
+        File.WriteAllText(overrideFilename, JsonConvert.SerializeObject(SavedConfigInstance ?? new SavedConfig(Config), Formatting.Indented));
+    }
+
+    private static void BeatmapDidUpdateContentWrapper(StandardLevelDetailViewController viewController,
+        StandardLevelDetailViewController.ContentType contentType)
+    {
+        BeatmapDidUpdateContent(viewController, contentType);
+    }
+
     // https://github.com/WentTheFox/BSDataPuller/blob/0e5349e59a39a28be26e4bb6027d72948fff6eac/Core/MapEvents.cs#L395
     internal static void BeatmapDidUpdateContent(StandardLevelDetailViewController viewController,
-        StandardLevelDetailViewController.ContentType contentType)
+        StandardLevelDetailViewController.ContentType contentType,
+        bool isManualRefresh = false)
     {
         if (!Config.Enabled)
         {
@@ -148,7 +201,12 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 #else
             BeatmapLevel beatmapLevel = await WaitForBeatmapLoaded(viewController);
 #endif
-            
+
+            if (!isManualRefresh)
+            {
+                LoadOverrides(beatmapLevel);
+            }
+
 #if PRE_V1_37_1
             Sprite? coverSprite = await beatmapLevel.GetCoverImageAsync(CancellationToken.None);
 #elif PRE_V1_39_1
@@ -180,10 +238,21 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                     );
                     readableTexture.Apply();
 
-                    if (Config.KernelSize > 0)
+                    if (SavedConfigInstance == null)
                     {
-                        readableTexture = _levelPackDetailViewController._kawaseBlurRenderer.Blur(readableTexture,
-                            (KawaseBlurRendererSO.KernelSize)Config.KernelSize - 1, Config.DownsampleFactor);
+                        if (Config.KernelSize > 0)
+                        {
+                            readableTexture = _levelPackDetailViewController._kawaseBlurRenderer.Blur(readableTexture,
+                                (KawaseBlurRendererSO.KernelSize)Config.KernelSize - 1, Config.DownsampleFactor);
+                        }
+                    }
+                    else
+                    {
+                        if (SavedConfigInstance.KernelSize > 0)
+                        {
+                            readableTexture = _levelPackDetailViewController._kawaseBlurRenderer.Blur(readableTexture,
+                                (KawaseBlurRendererSO.KernelSize)SavedConfigInstance.KernelSize - 1, SavedConfigInstance.DownsampleFactor);
+                        }
                     }
                 }
                 finally
@@ -199,7 +268,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             List<QuantizedColor> colors = [];
             try
             {
-                colors = ColorThief.ColorThief.GetPalette(readableTexture, Config.PaletteSize + 1, 1);
+                colors = ColorThief.ColorThief.GetPalette(readableTexture, (SavedConfigInstance?.PaletteSize ?? Config.PaletteSize) + 1, 1);
                 colors.Sort(new QuantizedColorVibrancyComparer());
                 Plugin.DebugMessage($"Got {colors.Count} colors");
             }
@@ -216,7 +285,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                 saberBColor = colors[i].UnityColor;
 
                 // ReSharper disable once InvertIf
-                if (GetYiqDifference(saberAColor, saberBColor) > Config.MinimumContrastDifference)
+                if (GetYiqDifference(saberAColor, saberBColor) > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
                 {
                     colors.RemoveAt(i);
                     break;

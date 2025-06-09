@@ -1,6 +1,8 @@
 using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
+
 // ReSharper disable RedundantDefaultMemberInitializer
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
@@ -22,4 +24,24 @@ internal class PluginConfig
     public virtual bool FlipLightColors { get; set; } = false;
     public virtual bool FlipBoostColors { get; set; } = false;
     public virtual bool FlipLightSchemes { get; set; } = false;
+}
+
+[JsonObject(MemberSerialization.OptIn)]
+internal sealed class SavedConfig
+{
+    private static PluginConfig Config => PluginConfig.Instance;
+    [JsonProperty] public int KernelSize { get; set; } = Config.KernelSize;
+    [JsonProperty] public int DownsampleFactor { get; set; } = Config.DownsampleFactor;
+    [JsonProperty] public int PaletteSize { get; set; } = Config.PaletteSize;
+    [JsonProperty] public int MinimumContrastDifference { get; set; } = Config.MinimumContrastDifference;
+
+    internal SavedConfig(PluginConfig config)
+    {
+        KernelSize = config.KernelSize;
+        DownsampleFactor = config.DownsampleFactor;
+        PaletteSize = config.PaletteSize;
+        MinimumContrastDifference = config.MinimumContrastDifference;
+    }
+
+    internal SavedConfig() { }
 }
