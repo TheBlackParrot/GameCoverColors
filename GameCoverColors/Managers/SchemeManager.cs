@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -115,8 +114,8 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     {
         public int Compare(QuantizedColor x, QuantizedColor y)
         {
-            float yiqX = GetYiq(x.UnityColor);
-            float yiqY = GetYiq(y.UnityColor);
+            float yiqX = x.UnityColor.GetYiq();
+            float yiqY = y.UnityColor.GetYiq();
 
             switch (true)
             {
@@ -129,10 +128,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             }
         }
     }
-
-    private static float GetYiq(Color color) => (color.r * 299) + (color.g * 587) + (color.b * 114);
-    private static float GetYiqDifference(Color x, Color y) => Mathf.Abs(GetYiq(x) - GetYiq(y));
-    private static bool SwapColors(Color x, Color y) => GetYiq(x) < GetYiq(y);
+    
+    private static float GetYiqDifference(Color x, Color y) => Mathf.Abs(x.GetYiq() - y.GetYiq());
+    private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
 
     private static void LoadOverrides(BeatmapLevel beatmapLevel)
     {
