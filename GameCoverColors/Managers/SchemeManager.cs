@@ -2,13 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+#if PRE_V1_39_1
 using System.Threading;
+#endif
 using System.Threading.Tasks;
 using GameCoverColors.ColorThief;
 using GameCoverColors.Configuration;
 using GameCoverColors.Extensions;
 using GameCoverColors.UI;
+#if PRE_V1_37_1
 using IPA.Utilities;
+#endif
 using IPA.Utilities.Async;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
