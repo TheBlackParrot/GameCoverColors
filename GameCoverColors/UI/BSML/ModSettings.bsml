@@ -21,7 +21,7 @@
     <button text="Export Generated Color Scheme" on-click="ExportColorScheme"/>
 
     <modal id="ModalToLetPeopleKnowThingHappened" hide-event="HideModalThing"
-           move-to-center="true" clickerino-offerino-closerino="true" size-delta="70 20">
+           move-to-center="true" clickerino-offerino-closerino="true" size-delta-x="70" size-delta-y="20">
         <vertical pad="1" spacing="0" child-align="MiddleCenter"
                   horizontal-fit="PreferredSize" preferred-width="40"
                   vertical-fit="Unconstrained" child-control-height="true"

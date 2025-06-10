@@ -74,7 +74,7 @@
                     apply-on-change="true" bind-value="true"/>
     
     <modal id="ModalToLetPeopleKnowThingHappened" hide-event="HideModalThing"
-           move-to-center="true" clickerino-offerino-closerino="true" size-delta="40 20">
+           move-to-center="true" clickerino-offerino-closerino="true" size-delta-x="40" size-delta-y="20">
         <vertical pad="1" spacing="0" child-align="MiddleCenter"
                   horizontal-fit="PreferredSize" preferred-width="40"
                   vertical-fit="Unconstrained" child-control-height="true"

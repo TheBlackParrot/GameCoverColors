@@ -10,7 +10,7 @@
         <EnableFrameworkPathOverride>true</EnableFrameworkPathOverride>
         <FrameworkPathOverride>$(BeatSaberDir)\Beat Saber_Data\Managed</FrameworkPathOverride>
         <MarkPackageReferencesAsExternallyResolved>false</MarkPackageReferencesAsExternallyResolved>
-        <Configurations>Release-1.39.1;Debug-1.40.3;Debug-1.39.1;Release-1.40.3;Debug-1.37.1</Configurations>
+        <Configurations>Release-1.39.1;Debug-1.40.3;Debug-1.39.1;Release-1.40.3;Debug-1.37.1;Debug-1.34.2</Configurations>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
@@ -43,7 +43,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="BeatSaber.ViewSystem" Condition="$(GameVersion) != '1.37.1'">
+        <Reference Include="BeatSaber.ViewSystem" Condition="$(GameVersion) == '1.39.1' Or $(GameVersion) == '1.40.3'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BeatSaber.ViewSystem.dll</HintPath>
             <Private>false</Private>
         </Reference>
@@ -64,8 +64,12 @@
             <Private>false</Private>
             <Publicize>true</Publicize>
         </Reference>
-        <Reference Include="DataModels">
+        <Reference Include="DataModels" Condition="$(GameVersion) != '1.34.2'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\DataModels.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="GameplayCore" Condition="$(GameVersion) == '1.34.2'">
+            <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="Hive.Versioning">
@@ -81,7 +85,7 @@
             <Private>false</Private>
             <Publicize>true</Publicize>
         </Reference>
-        <Reference Include="Interactable" Condition="$(GameVersion) != '1.37.1'">
+        <Reference Include="Interactable" Condition="$(GameVersion) == '1.39.1' Or $(GameVersion) == '1.40.3'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Interactable.dll</HintPath>
             <Private>false</Private>
         </Reference>
@@ -134,7 +138,7 @@
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="ZenjectExtension" Condition="$(GameVersion) != '1.37.1'">
+        <Reference Include="ZenjectExtension" Condition="$(GameVersion) == '1.39.1' Or $(GameVersion) == '1.40.3'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\ZenjectExtension.dll</HintPath>
             <Private>false</Private>
         </Reference>

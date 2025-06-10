@@ -122,10 +122,12 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     [UsedImplicitly]
     private async Task SaveSettings()
     {
+#if !PRE_V1_37_1
         if (_standardLevelDetailViewController == null)
         {
             return;
         }
+#endif
 
         try
         {

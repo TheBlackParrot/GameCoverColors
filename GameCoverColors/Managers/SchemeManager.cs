@@ -8,6 +8,7 @@ using GameCoverColors.ColorThief;
 using GameCoverColors.Configuration;
 using GameCoverColors.Extensions;
 using GameCoverColors.UI;
+using IPA.Utilities;
 using IPA.Utilities.Async;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
@@ -63,7 +64,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     }
     
 #if PRE_V1_37_1
-    private static async Task<IPreviewBeatmapLevel> WaitForBeatmapLoaded(StandardLevelDetailViewController standardLevelDetailViewController)
+    internal static async Task<IPreviewBeatmapLevel> WaitForBeatmapLoaded(StandardLevelDetailViewController standardLevelDetailViewController)
     {
         while (standardLevelDetailViewController.beatmapLevel == null)
         {
@@ -130,7 +131,11 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     private static float GetYiqDifference(Color x, Color y) => Mathf.Abs(x.GetYiq() - y.GetYiq());
     private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
 
+#if PRE_V1_37_1
+    private static void LoadOverrides(IPreviewBeatmapLevel beatmapLevel)
+#else
     private static void LoadOverrides(BeatmapLevel beatmapLevel)
+#endif
     {
         char[] invalidCharacters = Path.GetInvalidFileNameChars();
         string overrideFilename = Path.Combine(OverridesPath, string.Join("", beatmapLevel.levelID.Where(c => !invalidCharacters.Contains(c))) + ".json");
@@ -155,7 +160,11 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         SettingsViewController.Instance?.NotifyPropertiesChanged();
     }
 
+#if PRE_V1_37_1
+    internal static void SaveOverrides(IPreviewBeatmapLevel beatmapLevel)
+#else
     internal static void SaveOverrides(BeatmapLevel beatmapLevel)
+#endif
     {
         char[] invalidCharacters = Path.GetInvalidFileNameChars();
         string overrideFilename = Path.Combine(OverridesPath, string.Join("", beatmapLevel.levelID.Where(c => !invalidCharacters.Contains(c))) + ".json");
@@ -356,12 +365,15 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         });
     }
 
+#if PRE_V1_37_1
+    [AffinityPatch(typeof(StandardLevelScenesTransitionSetupDataSO), nameof(StandardLevelScenesTransitionSetupDataSO.Init))]
+#else
     [AffinityPatch(typeof(StandardLevelScenesTransitionSetupDataSO), nameof(StandardLevelScenesTransitionSetupDataSO.InitColorInfo))]
+#endif
     [AffinityPostfix]
     // ReSharper disable once InconsistentNaming
     private void InitColorInfoPatch(StandardLevelScenesTransitionSetupDataSO __instance)
     {
-        Plugin.DebugMessage("InitColorInfo called");
         if (!Config.Enabled)
         {
             return;
@@ -369,6 +381,8 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         
         __instance.usingOverrideColorScheme = true;
         __instance.colorScheme = Colors;
-        Plugin.DebugMessage("Got here");
+#if PRE_V1_37_1
+        __instance.gameplayCoreSceneSetupData.SetField("colorScheme", Colors);
+#endif
     }
 }
