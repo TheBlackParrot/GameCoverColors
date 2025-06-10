@@ -15,4 +15,23 @@
     <toggle-setting value="FlipLightSchemes" apply-on-change="true"
                     text="Flip Light Scheme Preference"
                     hover-hint="By default, the more vibrant light colors are given to boost lights. This gives them to the standard lights."/>
+
+    <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
+    
+    <button text="Export Generated Color Scheme" on-click="ExportColorScheme"/>
+
+    <modal id="ModalToLetPeopleKnowThingHappened" hide-event="HideModalThing"
+           move-to-center="true" clickerino-offerino-closerino="true" size-delta="70 20">
+        <vertical pad="1" spacing="0" child-align="MiddleCenter"
+                  horizontal-fit="PreferredSize" preferred-width="40"
+                  vertical-fit="Unconstrained" child-control-height="true"
+                  background="round-rect-panel" bg-color="#FFFFFF">
+            <text id="ExportConfirmationText"
+                  text="" word-wrapping="true" rich-text="false"
+                  font-align="Center" font-size="4" color="#FFFFFF"/>
+            <horizontal>
+                <button text="OK" click-event="HideModalThing"/>
+            </horizontal>
+        </vertical>
+    </modal>
 </settings-container>

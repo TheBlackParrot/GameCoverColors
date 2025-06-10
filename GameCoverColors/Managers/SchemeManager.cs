@@ -21,8 +21,7 @@ namespace GameCoverColors.Managers;
 [UsedImplicitly]
 internal class SchemeManager : IInitializable, IDisposable, IAffinity
 {
-    private static readonly string UserDataPath = Path.Combine(UnityGame.UserDataPath, "GameCoverColors");
-    private static readonly string OverridesPath = Path.Combine(UserDataPath, "Overrides");
+    private static readonly string OverridesPath = Path.Combine(Plugin.UserDataPath, "Overrides");
     
     private static PluginConfig Config => PluginConfig.Instance;
     internal static SavedConfig? SavedConfigInstance;
@@ -42,7 +41,6 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 
     public void Initialize()
     {
-        if (!Directory.Exists(UserDataPath)) { Directory.CreateDirectory(UserDataPath); }
         if (!Directory.Exists(OverridesPath)) { Directory.CreateDirectory(OverridesPath); }
         
         if (_standardLevelDetailViewController == null)

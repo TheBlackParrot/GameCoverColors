@@ -22,7 +22,7 @@
     <PluginId>GameCoverColors</PluginId>
     <PluginName>GameCoverColors</PluginName>
     <Authors>TheBlackParrot</Authors>
-    <Version>0.1.0+$(GameVersion)</Version>
+    <Version>0.1.1+$(GameVersion)</Version>
     <Description>Makes the in-game colors reflect the selected cover art</Description>
     <ProjectSource>https://github.com/TheBlackParrot/GameCoverColors</ProjectSource>
     <ProjectHome>https://github.com/TheBlackParrot/GameCoverColors</ProjectHome>
