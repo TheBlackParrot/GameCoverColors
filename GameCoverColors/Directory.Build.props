@@ -2,6 +2,13 @@
 <!-- This file contains project properties used by the build. -->
 <Project>
 
+  <PropertyGroup Condition="$(Configuration) == 'Release-1.37.1' Or $(Configuration) == 'Debug-1.37.1'">
+    <GameVersion>1.37.1</GameVersion>
+
+    <BSIPAVersion>4.3.4</BSIPAVersion>
+    <BSMLVersion>1.11.4</BSMLVersion>
+    <SiraUtilVersion>3.1.11</SiraUtilVersion>
+  </PropertyGroup>
   <PropertyGroup Condition="$(Configuration) == 'Release-1.39.1' Or $(Configuration) == 'Debug-1.39.1'">
     <GameVersion>1.39.1</GameVersion>
 

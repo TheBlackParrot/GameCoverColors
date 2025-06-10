@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using GameCoverColors.ColorThief;
 using GameCoverColors.Configuration;
@@ -203,9 +204,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             }
 
 #if PRE_V1_37_1
-            Sprite? coverSprite = @await beatmapLevel.GetCoverImageAsync(CancellationToken.None);
+            Sprite? coverSprite = await beatmapLevel.GetCoverImageAsync(CancellationToken.None);
 #elif PRE_V1_39_1
-            Sprite? coverSprite = @await beatmapLevel.previewMediaData.GetCoverSpriteAsync(CancellationToken.None);
+            Sprite? coverSprite = await beatmapLevel.previewMediaData.GetCoverSpriteAsync(CancellationToken.None);
 #else
             Sprite? coverSprite = await beatmapLevel.previewMediaData.GetCoverSpriteAsync();
 #endif

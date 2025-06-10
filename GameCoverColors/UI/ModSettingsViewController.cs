@@ -23,13 +23,22 @@ internal class ModSettingsViewController : IInitializable, IDisposable
     
     public void Initialize()
     {
+#if PRE_V1_39_1
+        BeatSaberMarkupLanguage.Settings.BSMLSettings.instance.AddSettingsMenu("GameCoverColors",
+            "GameCoverColors.UI.BSML.ModSettings.bsml", this);
+#else
         BeatSaberMarkupLanguage.Settings.BSMLSettings.Instance.AddSettingsMenu("GameCoverColors",
             "GameCoverColors.UI.BSML.ModSettings.bsml", this);
+#endif
     }
 
     public void Dispose()
     {
+#if PRE_V1_39_1
+        BeatSaberMarkupLanguage.Settings.BSMLSettings.instance?.RemoveSettingsMenu(this);
+#else
         BeatSaberMarkupLanguage.Settings.BSMLSettings.Instance?.RemoveSettingsMenu(this);
+#endif
     }
 
     [UIAction("ExportColorScheme")]
