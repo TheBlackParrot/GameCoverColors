@@ -43,7 +43,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="BeatSaber.ViewSystem">
+        <Reference Include="BeatSaber.ViewSystem" Condition="$(GameVersion) != '1.37.1'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BeatSaber.ViewSystem.dll</HintPath>
             <Private>false</Private>
         </Reference>
@@ -81,7 +81,7 @@
             <Private>false</Private>
             <Publicize>true</Publicize>
         </Reference>
-        <Reference Include="Interactable">
+        <Reference Include="Interactable" Condition="$(GameVersion) != '1.37.1'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Interactable.dll</HintPath>
             <Private>false</Private>
         </Reference>
@@ -134,7 +134,7 @@
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="ZenjectExtension">
+        <Reference Include="ZenjectExtension" Condition="$(GameVersion) != '1.37.1'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\ZenjectExtension.dll</HintPath>
             <Private>false</Private>
         </Reference>
