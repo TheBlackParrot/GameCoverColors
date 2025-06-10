@@ -7,7 +7,6 @@ using GameCoverColors.ColorThief;
 using GameCoverColors.Configuration;
 using GameCoverColors.Extensions;
 using GameCoverColors.UI;
-using IPA.Utilities;
 using IPA.Utilities.Async;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
@@ -167,11 +166,11 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     private static void BeatmapDidUpdateContentWrapper(StandardLevelDetailViewController viewController,
         StandardLevelDetailViewController.ContentType contentType)
     {
-        BeatmapDidUpdateContent(viewController, contentType);
+        _ = BeatmapDidUpdateContent(viewController, contentType);
     }
 
     // https://github.com/WentTheFox/BSDataPuller/blob/0e5349e59a39a28be26e4bb6027d72948fff6eac/Core/MapEvents.cs#L395
-    internal static void BeatmapDidUpdateContent(StandardLevelDetailViewController viewController,
+    internal static async Task BeatmapDidUpdateContent(StandardLevelDetailViewController viewController,
         StandardLevelDetailViewController.ContentType contentType,
         bool isManualRefresh = false)
     {
@@ -190,23 +189,23 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             return;
         }
         
-        UnityMainThreadTaskScheduler.Factory.StartNew<Task>(async () =>
-        {
 #if PRE_V1_37_1
-            IPreviewBeatmapLevel beatmapLevel = await WaitForBeatmapLoaded(viewController);
+        IPreviewBeatmapLevel beatmapLevel = await WaitForBeatmapLoaded(viewController);
 #else
-            BeatmapLevel beatmapLevel = await WaitForBeatmapLoaded(viewController);
+        BeatmapLevel beatmapLevel = await WaitForBeatmapLoaded(viewController);
 #endif
-
+        
+        _ = UnityMainThreadTaskScheduler.Factory.StartNew<Task>(async () =>
+        {
             if (!isManualRefresh)
             {
                 LoadOverrides(beatmapLevel);
             }
 
 #if PRE_V1_37_1
-            Sprite? coverSprite = await beatmapLevel.GetCoverImageAsync(CancellationToken.None);
+            Sprite? coverSprite = @await beatmapLevel.GetCoverImageAsync(CancellationToken.None);
 #elif PRE_V1_39_1
-            Sprite? coverSprite = await beatmapLevel.previewMediaData.GetCoverSpriteAsync(CancellationToken.None);
+            Sprite? coverSprite = @await beatmapLevel.previewMediaData.GetCoverSpriteAsync(CancellationToken.None);
 #else
             Sprite? coverSprite = await beatmapLevel.previewMediaData.GetCoverSpriteAsync();
 #endif

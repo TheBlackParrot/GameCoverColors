@@ -109,9 +109,9 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
 
     [UIAction("RefreshSettings")]
     [UsedImplicitly]
-    private void RefreshSettings()
+    private async Task RefreshSettings()
     {
-        SchemeManager.BeatmapDidUpdateContent(_standardLevelDetailViewController,
+        await SchemeManager.BeatmapDidUpdateContent(_standardLevelDetailViewController,
             _standardLevelDetailViewController._contentIsOwnedAndReady
                 ? StandardLevelDetailViewController.ContentType.OwnedAndReady
                 : StandardLevelDetailViewController.ContentType.Loading, 
