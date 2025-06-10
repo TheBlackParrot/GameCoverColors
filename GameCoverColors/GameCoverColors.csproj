@@ -10,7 +10,7 @@
         <EnableFrameworkPathOverride>true</EnableFrameworkPathOverride>
         <FrameworkPathOverride>$(BeatSaberDir)\Beat Saber_Data\Managed</FrameworkPathOverride>
         <MarkPackageReferencesAsExternallyResolved>false</MarkPackageReferencesAsExternallyResolved>
-        <Configurations>Release-1.39.1;Debug-1.40.3;Debug-1.39.1;Release-1.40.3;Debug-1.37.1;Debug-1.34.2</Configurations>
+        <Configurations>Release-1.39.1;Debug-1.40.3;Debug-1.39.1;Release-1.40.3;Debug-1.37.1;Debug-1.34.2;Debug-1.29.1</Configurations>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
@@ -43,15 +43,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="BeatSaber.ViewSystem" Condition="$(GameVersion) == '1.39.1' Or $(GameVersion) == '1.40.3'">
+        <Reference Include="BeatSaber.ViewSystem" Condition="$(GameVersion) >= '1.39.1'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BeatSaber.ViewSystem.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="BGLib.AppFlow">
+        <Reference Include="BGLib.AppFlow" Condition="$(GameVersion) >= '1.34.2'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BGLib.AppFlow.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="BGLib.UnityExtension">
+        <Reference Include="BGLib.UnityExtension" Condition="$(GameVersion) >= '1.34.2'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BGLib.UnityExtension.dll</HintPath>
             <Private>false</Private>
         </Reference>
@@ -64,16 +64,20 @@
             <Private>false</Private>
             <Publicize>true</Publicize>
         </Reference>
-        <Reference Include="DataModels" Condition="$(GameVersion) != '1.34.2'">
+        <Reference Include="DataModels" Condition="$(GameVersion) != '1.34.2' And $(GameVersion) != '1.29.1'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\DataModels.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="GameplayCore" Condition="$(GameVersion) == '1.34.2'">
+        <Reference Include="GameplayCore" Condition="$(GameVersion) == '1.34.2' Or $(GameVersion) == '1.29.1'">
             <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="Hive.Versioning">
             <HintPath>$(BeatSaberDir)\Libs\Hive.Versioning.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="HMLib" Condition="$(GameVersion) == '1.29.1'">
+            <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\HMLib.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="HMRendering">

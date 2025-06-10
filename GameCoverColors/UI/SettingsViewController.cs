@@ -37,7 +37,9 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     private static SavedConfig? SavedConfigInstance => SchemeManager.SavedConfigInstance;
     internal static SettingsViewController? Instance;
     
+#if !V1_29_1
     private readonly GameplaySetup _gameplaySetup;
+#endif
     private readonly GameplaySetupViewController _gameplaySetupViewController;
     private readonly StandardLevelDetailViewController _standardLevelDetailViewController;
     
@@ -63,11 +65,18 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
         _modalToLetPeopleKnowThingHappened?.Show(true, true);
     }
 
+#if V1_29_1
+    private SettingsViewController(GameplaySetupViewController gameplaySetupViewController,
+        StandardLevelDetailViewController standardLevelDetailViewController)
+#else
     private SettingsViewController(GameplaySetup gameplaySetup,
         GameplaySetupViewController gameplaySetupViewController,
-        StandardLevelDetailViewController standardLevelDetailViewController )
+        StandardLevelDetailViewController standardLevelDetailViewController)
+#endif
     {
+#if !V1_29_1
         _gameplaySetup = gameplaySetup;
+#endif
         _gameplaySetupViewController = gameplaySetupViewController;
         _standardLevelDetailViewController = standardLevelDetailViewController;
         
@@ -76,13 +85,21 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     
     public void Initialize()
     {
+#if V1_29_1
+        GameplaySetup.instance.AddTab("GameCoverColors", "GameCoverColors.UI.BSML.Settings.bsml", this);
+#else
         _gameplaySetup.AddTab("GameCoverColors", "GameCoverColors.UI.BSML.Settings.bsml", this);
+#endif
         _gameplaySetupViewController.didActivateEvent += GameplaySetupViewController_DidActivateEvent;
     }
 
     public void Dispose()
     {
+#if V1_29_1
+        GameplaySetup.instance.RemoveTab("GameCoverColors");
+#else
         _gameplaySetup.RemoveTab("GameCoverColors");
+#endif
         _gameplaySetupViewController.didActivateEvent -= GameplaySetupViewController_DidActivateEvent;
     }
 

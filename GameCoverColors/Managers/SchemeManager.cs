@@ -349,7 +349,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                 Config.FlipLightSchemes
                     ? (Config.FlipLightColors ? boostAColor : boostBColor)
                     : (Config.FlipLightColors ? lightAColor : lightBColor),
+#if !V1_29_1
                 Color.white,
+#endif
                 true,
                 Config.FlipLightSchemes
                     ? (Config.FlipBoostColors ? lightBColor : lightAColor)
@@ -357,7 +359,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                 Config.FlipLightSchemes
                     ? (Config.FlipBoostColors ? lightAColor : lightBColor)
                     : (Config.FlipBoostColors ? boostAColor : boostBColor),
+#if !V1_29_1
                 Color.white,
+#endif
                 Color.black
             );
 
