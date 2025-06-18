@@ -13,7 +13,6 @@ using GameCoverColors.UI;
 #if PRE_V1_37_1
 using IPA.Utilities;
 #endif
-using IPA.Utilities.Async;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using SiraUtil.Affinity;
@@ -188,11 +187,6 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         StandardLevelDetailViewController.ContentType contentType,
         bool isManualRefresh = false)
     {
-        if (!Config.Enabled)
-        {
-            return;
-        }
-        
         if (_levelPackDetailViewController == null)
         {
             return;
@@ -209,168 +203,165 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         BeatmapLevel beatmapLevel = await WaitForBeatmapLoaded(viewController);
 #endif
         
-        _ = UnityMainThreadTaskScheduler.Factory.StartNew<Task>(async () =>
+        if (!isManualRefresh)
         {
-            if (!isManualRefresh)
-            {
-                LoadOverrides(beatmapLevel);
-            }
+            LoadOverrides(beatmapLevel);
+        }
 
 #if PRE_V1_37_1
-            Sprite? coverSprite = await beatmapLevel.GetCoverImageAsync(CancellationToken.None);
+        Sprite? coverSprite = await beatmapLevel.GetCoverImageAsync(CancellationToken.None);
 #elif PRE_V1_39_1
-            Sprite? coverSprite = await beatmapLevel.previewMediaData.GetCoverSpriteAsync(CancellationToken.None);
+        Sprite? coverSprite = await beatmapLevel.previewMediaData.GetCoverSpriteAsync(CancellationToken.None);
 #else
-            Sprite? coverSprite = await beatmapLevel.previewMediaData.GetCoverSpriteAsync();
+        Sprite? coverSprite = await beatmapLevel.previewMediaData.GetCoverSpriteAsync();
 #endif
             
-            RenderTexture? activeRenderTexture = RenderTexture.active;
-            Texture2D? coverTexture = coverSprite.texture;
-            RenderTexture? temporary = RenderTexture.GetTemporary(coverTexture.width, coverTexture.height, 0,
-                RenderTextureFormat.Default, RenderTextureReadWrite.Default);
-            Texture2D? readableTexture;
+        RenderTexture? activeRenderTexture = RenderTexture.active;
+        Texture2D? coverTexture = coverSprite.texture;
+        RenderTexture? temporary = RenderTexture.GetTemporary(coverTexture.width, coverTexture.height, 0,
+            RenderTextureFormat.Default, RenderTextureReadWrite.Default);
+        Texture2D? readableTexture;
             
+        try
+        {
+            Graphics.Blit(coverTexture, temporary);
+            RenderTexture.active = temporary;
+
             try
             {
-                Graphics.Blit(coverTexture, temporary);
-                RenderTexture.active = temporary;
-
-                try
-                {
-                    Rect textureRect = coverSprite.textureRect;
-                    readableTexture = new Texture2D((int)textureRect.width, (int)textureRect.height);
+                Rect textureRect = coverSprite.textureRect;
+                readableTexture = new Texture2D((int)textureRect.width, (int)textureRect.height);
                     
-                    readableTexture.ReadPixels(
-                        textureRect,
-                        0,
-                        0
-                    );
-                    readableTexture.Apply();
+                readableTexture.ReadPixels(
+                    textureRect,
+                    0,
+                    0
+                );
+                readableTexture.Apply();
 
-                    if (SavedConfigInstance == null)
+                if (SavedConfigInstance == null)
+                {
+                    if (Config.KernelSize > 0)
                     {
-                        if (Config.KernelSize > 0)
-                        {
-                            readableTexture = _levelPackDetailViewController._kawaseBlurRenderer.Blur(readableTexture,
-                                (KawaseBlurRendererSO.KernelSize)Config.KernelSize - 1, Config.DownsampleFactor);
-                        }
-                    }
-                    else
-                    {
-                        if (SavedConfigInstance.KernelSize > 0)
-                        {
-                            readableTexture = _levelPackDetailViewController._kawaseBlurRenderer.Blur(readableTexture,
-                                (KawaseBlurRendererSO.KernelSize)SavedConfigInstance.KernelSize - 1, SavedConfigInstance.DownsampleFactor);
-                        }
+                        readableTexture = _levelPackDetailViewController._kawaseBlurRenderer.Blur(readableTexture,
+                            (KawaseBlurRendererSO.KernelSize)Config.KernelSize - 1, Config.DownsampleFactor);
                     }
                 }
-                finally
+                else
                 {
-                    RenderTexture.active = activeRenderTexture;
+                    if (SavedConfigInstance.KernelSize > 0)
+                    {
+                        readableTexture = _levelPackDetailViewController._kawaseBlurRenderer.Blur(readableTexture,
+                            (KawaseBlurRendererSO.KernelSize)SavedConfigInstance.KernelSize - 1, SavedConfigInstance.DownsampleFactor);
+                    }
                 }
             }
             finally
             {
-                RenderTexture.ReleaseTemporary(temporary);
+                RenderTexture.active = activeRenderTexture;
             }
+        }
+        finally
+        {
+            RenderTexture.ReleaseTemporary(temporary);
+        }
             
-            List<QuantizedColor> colors = [];
-            try
-            {
-                colors = ColorThief.ColorThief.GetPalette(readableTexture, (SavedConfigInstance?.PaletteSize ?? Config.PaletteSize) + 1, 1);
-                colors.Sort(new QuantizedColorVibrancyComparer());
-                Plugin.DebugMessage($"Got {colors.Count} colors");
-            }
-            catch (Exception e)
-            {
-                Plugin.Log.Error(e);
-            }
+        List<QuantizedColor> colors = [];
+        try
+        {
+            colors = ColorThief.ColorThief.GetPalette(readableTexture, (SavedConfigInstance?.PaletteSize ?? Config.PaletteSize) + 1, 1);
+            colors.Sort(new QuantizedColorVibrancyComparer());
+            Plugin.DebugMessage($"Got {colors.Count} colors");
+        }
+        catch (Exception e)
+        {
+            Plugin.Log.Error(e);
+        }
 
-            Color saberAColor = colors[0].UnityColor;
-            colors.RemoveAt(0);
-            Color saberBColor = Color.magenta; // rider get off my ass
-            for (int i = 0; i < colors.Count; i++)
-            {
-                saberBColor = colors[i].UnityColor;
+        Color saberAColor = colors[0].UnityColor;
+        colors.RemoveAt(0);
+        Color saberBColor = Color.magenta; // rider get off my ass
+        for (int i = 0; i < colors.Count; i++)
+        {
+            saberBColor = colors[i].UnityColor;
 
-                // ReSharper disable once InvertIf
-                if (GetYiqDifference(saberAColor, saberBColor) > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
-                {
-                    colors.RemoveAt(i);
-                    break;
-                }
+            // ReSharper disable once InvertIf
+            if (GetYiqDifference(saberAColor, saberBColor) > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
+            {
+                colors.RemoveAt(i);
+                break;
             }
+        }
 
-            if (SwapColors(saberAColor, saberBColor))
-            {
-                Color x = saberAColor;
-                Color y = saberBColor;
-                saberAColor = y;
-                saberBColor = x;
-            }
+        if (SwapColors(saberAColor, saberBColor))
+        {
+            Color x = saberAColor;
+            Color y = saberBColor;
+            saberAColor = y;
+            saberBColor = x;
+        }
             
-            Color boostAColor = colors[0].UnityColor;
-            colors.RemoveAt(0);
-            Color boostBColor = colors[0].UnityColor;
-            colors.RemoveAt(0);
-            if (SwapColors(boostAColor, boostBColor))
-            {
-                Color x = boostAColor;
-                Color y = boostBColor;
-                boostAColor = y;
-                boostBColor = x;
-            }
+        Color boostAColor = colors[0].UnityColor;
+        colors.RemoveAt(0);
+        Color boostBColor = colors[0].UnityColor;
+        colors.RemoveAt(0);
+        if (SwapColors(boostAColor, boostBColor))
+        {
+            Color x = boostAColor;
+            Color y = boostBColor;
+            boostAColor = y;
+            boostBColor = x;
+        }
             
-            colors.Sort(new QuantizedColorYiqComparer());
+        colors.Sort(new QuantizedColorYiqComparer());
             
-            Color lightAColor = colors[0].UnityColor;
-            Color lightBColor = colors[1].UnityColor;
-            if (SwapColors(lightAColor, lightBColor))
-            {
-                Color x = lightAColor;
-                Color y = lightBColor;
-                lightAColor = y;
-                lightBColor = x;
-            }
+        Color lightAColor = colors[0].UnityColor;
+        Color lightBColor = colors[1].UnityColor;
+        if (SwapColors(lightAColor, lightBColor))
+        {
+            Color x = lightAColor;
+            Color y = lightBColor;
+            lightAColor = y;
+            lightBColor = x;
+        }
             
-            Colors = new ColorScheme(
-                "GameCoverColorsScheme",
-                "GameCoverColorsScheme",
-                true,
-                "GameCoverColorsScheme",
-                false,
+        Colors = new ColorScheme(
+            "GameCoverColorsScheme",
+            "GameCoverColorsScheme",
+            true,
+            "GameCoverColorsScheme",
+            false,
 #if V1_40_3
-                true,
+            true,
 #endif
-                Config.FlipNoteColors ? saberBColor : saberAColor, 
-                Config.FlipNoteColors ? saberAColor : saberBColor,
+            Config.FlipNoteColors ? saberBColor : saberAColor, 
+            Config.FlipNoteColors ? saberAColor : saberBColor,
 #if V1_40_3
-                true,
+            true,
 #endif
-                Config.FlipLightSchemes
-                    ? (Config.FlipLightColors ? boostBColor : boostAColor)
-                    : (Config.FlipLightColors ? lightBColor : lightAColor),
-                Config.FlipLightSchemes
-                    ? (Config.FlipLightColors ? boostAColor : boostBColor)
-                    : (Config.FlipLightColors ? lightAColor : lightBColor),
+            Config.FlipLightSchemes
+                ? (Config.FlipLightColors ? boostBColor : boostAColor)
+                : (Config.FlipLightColors ? lightBColor : lightAColor),
+            Config.FlipLightSchemes
+                ? (Config.FlipLightColors ? boostAColor : boostBColor)
+                : (Config.FlipLightColors ? lightAColor : lightBColor),
 #if !V1_29_1
-                Color.white,
+            Color.white,
 #endif
-                true,
-                Config.FlipLightSchemes
-                    ? (Config.FlipBoostColors ? lightBColor : lightAColor)
-                    : (Config.FlipBoostColors ? boostBColor : boostAColor),
-                Config.FlipLightSchemes
-                    ? (Config.FlipBoostColors ? lightAColor : lightBColor)
-                    : (Config.FlipBoostColors ? boostAColor : boostBColor),
+            true,
+            Config.FlipLightSchemes
+                ? (Config.FlipBoostColors ? lightBColor : lightAColor)
+                : (Config.FlipBoostColors ? boostBColor : boostAColor),
+            Config.FlipLightSchemes
+                ? (Config.FlipBoostColors ? lightAColor : lightBColor)
+                : (Config.FlipBoostColors ? boostAColor : boostBColor),
 #if !V1_29_1
-                Color.white,
+            Color.white,
 #endif
-                Color.black
-            );
+            Color.black
+        );
 
-            SettingsViewController.Instance?.RefreshColors();
-        });
+        SettingsViewController.Instance?.RefreshColors();
     }
 
 #if PRE_V1_37_1
