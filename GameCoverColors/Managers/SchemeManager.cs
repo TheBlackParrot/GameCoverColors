@@ -242,7 +242,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                     if (Config.KernelSize > 0)
                     {
                         readableTexture = _levelPackDetailViewController._kawaseBlurRenderer.Blur(readableTexture,
-                            (KawaseBlurRendererSO.KernelSize)Config.KernelSize - 1, Config.DownsampleFactor);
+                            (KawaseBlurRendererSO.KernelSize)Config.KernelSize - 1);
                     }
                 }
                 else
@@ -250,7 +250,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                     if (SavedConfigInstance.KernelSize > 0)
                     {
                         readableTexture = _levelPackDetailViewController._kawaseBlurRenderer.Blur(readableTexture,
-                            (KawaseBlurRendererSO.KernelSize)SavedConfigInstance.KernelSize - 1, SavedConfigInstance.DownsampleFactor);
+                            (KawaseBlurRendererSO.KernelSize)SavedConfigInstance.KernelSize - 1);
                     }
                 }
             }

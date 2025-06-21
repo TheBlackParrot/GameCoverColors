@@ -178,24 +178,6 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
             NotifyPropertyChanged();
         }
     }
-
-    protected int DownsampleFactor
-    {
-        get => SavedConfigInstance?.DownsampleFactor ?? Config.DownsampleFactor;
-        set
-        {
-            if (SavedConfigInstance == null)
-            {
-                Config.DownsampleFactor = value;
-            }
-            else
-            {
-                SavedConfigInstance.DownsampleFactor = value;
-            }
-            
-            NotifyPropertyChanged();
-        }
-    }
     
     protected int PaletteSize
     {

@@ -55,11 +55,6 @@
                     show-buttons="true" formatter="KernelSizeFormatter"
                     hover-hint="Strength of the color averaging"
                     apply-on-change="true" bind-value="true"/>
-    <slider-setting value="DownsampleFactor" text="Downsample Factor"
-                    integer-only="true" min="0" max="6" increment="1"
-                    show-buttons="true"
-                    hover-hint="Lower values will get closer representations of visible color, higher values will average them closer"
-                    apply-on-change="true" bind-value="true"/>
     <slider-setting value="PaletteSize" text="Palette Size"
                     integer-only="true" min="6" max="32" increment="1"
                     show-buttons="true"
