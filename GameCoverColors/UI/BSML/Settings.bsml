@@ -48,8 +48,12 @@
     </horizontal>
 
     <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
-
-    <!-- list-slider-setting has a bug where it forces the formatter as a 0.0-formatted float with centimeters. idk either -->
+    
+    <slider-setting value="TextureSize" text="Texture Size"
+                    integer-only="true" min="8" max="512" increment="8"
+                    show-buttons="true" formatter="TextureSizeFormatter"
+                    hover-hint="Internal size of the cover texture (for color processing)"
+                    apply-on-change="true" bind-value="true"/>
     <slider-setting value="KernelSize" text="Kernel Size"
                     integer-only="true" min="0" max="8" increment="1"
                     show-buttons="true" formatter="KernelSizeFormatter"

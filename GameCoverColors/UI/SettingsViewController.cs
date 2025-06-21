@@ -47,6 +47,7 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     [UIValue("blurChoices")] private readonly List<int> _blurChoices = [0, 7, 15, 23, 35, 63, 127, 135, 143];
     [UsedImplicitly] private string KernelSizeFormatter(int value) => _blurChoices[value].ToString();
     [UsedImplicitly] private string ContrastFormatter(int value) => $"{(value / 10):0}%";
+    [UsedImplicitly] private string TextureSizeFormatter(int value) => $"{value}px";
     
     // ReSharper disable FieldCanBeMadeReadOnly.Local
     // ReSharper disable FieldCanBeMadeReadOnly.Global
@@ -159,6 +160,24 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     {
         get => Config.Enabled;
         set => Config.Enabled = value;
+    }
+    
+    protected int TextureSize
+    {
+        get => SavedConfigInstance?.TextureSize ?? Config.TextureSize;
+        set
+        {
+            if (SavedConfigInstance == null)
+            {
+                Config.TextureSize = value;
+            }
+            else
+            {
+                SavedConfigInstance.TextureSize = value;
+            }
+            
+            NotifyPropertyChanged();
+        }
     }
     
     protected int KernelSize

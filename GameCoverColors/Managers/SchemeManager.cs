@@ -208,6 +208,8 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         {
             LoadOverrides(beatmapLevel);
         }
+        
+        int textureSize = SavedConfigInstance?.TextureSize ?? Config.TextureSize;
 
 #if PRE_V1_37_1
         Sprite? coverSprite = await beatmapLevel.GetCoverImageAsync(CancellationToken.None);
@@ -218,10 +220,10 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 #endif
         
         RenderTexture? activeRenderTexture = RenderTexture.active;
-        RenderTexture temporary = RenderTexture.GetTemporary(128, 128, 0,
+        RenderTexture temporary = RenderTexture.GetTemporary(textureSize, textureSize, 0,
             RenderTextureFormat.Default, RenderTextureReadWrite.Default);
         
-        Texture2D readableTexture = new(128, 128);
+        Texture2D readableTexture = new(textureSize, textureSize);
             
         try
         {
