@@ -216,29 +216,26 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 #else
         Sprite? coverSprite = await beatmapLevel.previewMediaData.GetCoverSpriteAsync();
 #endif
-            
+        
         RenderTexture? activeRenderTexture = RenderTexture.active;
-        Texture2D? coverTexture = coverSprite.texture;
-        RenderTexture? temporary = RenderTexture.GetTemporary(coverTexture.width, coverTexture.height, 0,
+        RenderTexture temporary = RenderTexture.GetTemporary(128, 128, 0,
             RenderTextureFormat.Default, RenderTextureReadWrite.Default);
-        Texture2D? readableTexture;
+        
+        Texture2D readableTexture = new(128, 128);
             
         try
         {
-            Graphics.Blit(coverTexture, temporary);
             RenderTexture.active = temporary;
+            Graphics.Blit(coverSprite.texture, temporary);
 
             try
             {
-                Rect textureRect = coverSprite.textureRect;
-                readableTexture = new Texture2D((int)textureRect.width, (int)textureRect.height);
-                    
-                readableTexture.ReadPixels(
-                    textureRect,
-                    0,
-                    0
-                );
+                readableTexture.ReadPixels(new Rect(0, 0, temporary.width, temporary.height), 0, 0);
                 readableTexture.Apply();
+                
+#if DEBUG
+                await File.WriteAllBytesAsync("UserData/GameCoverColors/test-preblur.png", readableTexture.EncodeToPNG());
+#endif
 
                 if (SavedConfigInstance == null)
                 {
@@ -266,6 +263,10 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         {
             RenderTexture.ReleaseTemporary(temporary);
         }
+        
+#if DEBUG
+        await File.WriteAllBytesAsync("UserData/GameCoverColors/test-postblur.png", readableTexture.EncodeToPNG());
+#endif
             
         List<QuantizedColor> colors = [];
         try
