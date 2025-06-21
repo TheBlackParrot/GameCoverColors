@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.GameplaySetup;
 using GameCoverColors.Configuration;
@@ -12,6 +13,7 @@ using GameCoverColors.Managers;
 using HMUI;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 namespace GameCoverColors.UI;
@@ -47,6 +49,7 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     [UsedImplicitly] private string ContrastFormatter(int value) => $"{(value / 10):0}%";
     
     // ReSharper disable FieldCanBeMadeReadOnly.Local
+    // ReSharper disable FieldCanBeMadeReadOnly.Global
     [UIComponent("saberACircle")] private ImageView? _saberACircle = null;
     [UIComponent("saberBCircle")] private ImageView? _saberBCircle = null;
     [UIComponent("lightACircle")] private ImageView? _lightACircle = null;
@@ -56,6 +59,9 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     
     [UIComponent("ModalToLetPeopleKnowThingHappened")]
     private ModalView? _modalToLetPeopleKnowThingHappened = null;
+    
+    [UIComponent("saveSettingsButton")] internal Button? SaveSettingsButton = null;
+    // ReSharper restore FieldCanBeMadeReadOnly.Global
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 
     [UIAction("ShowModalThing")]
@@ -145,6 +151,7 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
             Plugin.Log.Error(e);
         }
 
+        SaveSettingsButton?.SetButtonText("Overwrite");
         ShowModalThing();
     }
 

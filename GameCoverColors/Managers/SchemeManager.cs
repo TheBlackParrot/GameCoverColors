@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 #endif
 using System.Threading.Tasks;
+using BeatSaberMarkupLanguage;
 using GameCoverColors.ColorThief;
 using GameCoverColors.Configuration;
 using GameCoverColors.Extensions;
@@ -371,6 +372,8 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 #endif
             Color.black
         );
+        
+        SettingsViewController.Instance?.SaveSettingsButton?.SetButtonText(SavedConfigInstance == null ? "Save" : "Overwrite");
 
         SettingsViewController.Instance?.RefreshColors();
     }

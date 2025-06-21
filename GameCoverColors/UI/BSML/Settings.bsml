@@ -43,7 +43,8 @@
     <horizontal spacing="2" child-expand-width="false"
                 child-align="MiddleCenter">
         <button text="Refresh" on-click="RefreshSettings"/>
-        <button text="Save" on-click="SaveSettings"/>
+        <button id="saveSettingsButton"
+                text="Save" on-click="SaveSettings"/>
     </horizontal>
 
     <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
