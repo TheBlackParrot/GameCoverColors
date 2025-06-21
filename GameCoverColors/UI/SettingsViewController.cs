@@ -40,7 +40,6 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
 #if !V1_29_1
     private readonly GameplaySetup _gameplaySetup;
 #endif
-    private readonly GameplaySetupViewController _gameplaySetupViewController;
     private readonly StandardLevelDetailViewController _standardLevelDetailViewController;
     
     [UIValue("blurChoices")] private readonly List<int> _blurChoices = [0, 7, 15, 23, 35, 63, 127, 135, 143];
@@ -66,18 +65,15 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     }
 
 #if V1_29_1
-    private SettingsViewController(GameplaySetupViewController gameplaySetupViewController,
-        StandardLevelDetailViewController standardLevelDetailViewController)
+    private SettingsViewController(StandardLevelDetailViewController standardLevelDetailViewController)
 #else
     private SettingsViewController(GameplaySetup gameplaySetup,
-        GameplaySetupViewController gameplaySetupViewController,
         StandardLevelDetailViewController standardLevelDetailViewController)
 #endif
     {
 #if !V1_29_1
         _gameplaySetup = gameplaySetup;
 #endif
-        _gameplaySetupViewController = gameplaySetupViewController;
         _standardLevelDetailViewController = standardLevelDetailViewController;
         
         Instance = this;
@@ -90,7 +86,6 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
 #else
         _gameplaySetup.AddTab("GameCoverColors", "GameCoverColors.UI.BSML.Settings.bsml", this);
 #endif
-        _gameplaySetupViewController.didActivateEvent += GameplaySetupViewController_DidActivateEvent;
     }
 
     public void Dispose()
@@ -100,11 +95,6 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
 #else
         _gameplaySetup.RemoveTab("GameCoverColors");
 #endif
-        _gameplaySetupViewController.didActivateEvent -= GameplaySetupViewController_DidActivateEvent;
-    }
-
-    private static void GameplaySetupViewController_DidActivateEvent(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
-    {
     }
 
     public void RefreshColors()
