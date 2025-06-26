@@ -370,17 +370,17 @@ internal static class Mmcq
         // get the beginning vbox from the colors
         VBox vbox = VboxFromPixels(pixels, histo);
         List<VBox> pq = [vbox];
-
+        
         // Round up to have the same behaviour as in JavaScript
         int target = (int)Math.Ceiling(FractByPopulation * maxcolors);
 
         // first set of colors, sorted by population
         Iter(pq, ComparatorCount, target, histo);
-
+        
         // Re-sort by the product of pixel occupancy times the size in color
         // space.
         pq.Sort(ComparatorProduct);
-
+        
         // next set - generate the median cuts using the (npix * vol) sorting.
         Iter(pq, ComparatorProduct, maxcolors - pq.Count, histo);
 
@@ -573,7 +573,7 @@ internal class VBoxComparer : IComparer<VBox>
         // Otherwise sort by products
         int a = aCount * aVolume;
         int b = bCount * bVolume;
-        return a < b ? -1 : a > b ? 1 : 0;
+        return (a < b) ? -1 : ((a > b) ? 1 : 0);
     }
 }
 
@@ -612,7 +612,7 @@ public class CMap
 
     private int[] Nearest(int[] color)
     {
-        double d1 = double.MaxValue;
+        double d1 = 0;
         int[] pColor = null!;
 
         foreach (VBox? t in _vboxes)
@@ -742,12 +742,6 @@ public abstract class ColorThief
     {
         NativeArray<Color32> mipData = sourceImage.GetPixelData<Color32>(mipLevel);
         int pixelCount = mipData.Length;
-
-        // Store the RGB values in an array format suitable for quantize
-        // function
-
-        // numRegardedPixels must be rounded up to avoid an
-        // ArrayIndexOutOfBoundsException if all pixels are good.
         
         int[][] pixelArray = new int[pixelCount][];
 
