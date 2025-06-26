@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using UnityEngine;
 
 namespace GameCoverColors.ColorThief;
@@ -736,42 +737,11 @@ public abstract class ColorThief
         return cmap;
     }
 
-    private static IEnumerable<int> GetIntFromPixel(Texture2D bmp)
+    // https://github.com/chiutse/ColorThief/issues/2#issuecomment-1494637190
+    private static int[][] GetPixelsFast(Texture2D sourceImage, int mipLevel = 0)
     {
-        Color32[] clrs = bmp.GetPixels32();
-        foreach (Color32 clr in clrs)
-        {
-            yield return clr.b;
-            yield return clr.g;
-            yield return clr.r;
-            yield return clr.a;
-        }
-        // for(var x = 0; x < bmp.Width; x++)
-        // {
-        //     for(var y = 0; y < bmp.Height; y++)
-        //     {
-        //         var clr = bmp.GetPixel(x, y);
-        //         yield return clr.B;
-        //         yield return clr.G;
-        //         yield return clr.R;
-        //         yield return clr.A;
-        //     }
-        // }
-    }
-
-    private static int[][] GetPixelsFast(Texture2D sourceImage)
-    {
-        IEnumerable<int> imageData = GetIntFromPixel(sourceImage);
-        int[] pixels = imageData.ToArray();
-        int pixelCount = sourceImage.width * sourceImage.height;
-
-        const int colorDepth = 4;
-
-        int expectedDataLength = pixelCount * colorDepth;
-        if (expectedDataLength != pixels.Length)
-            throw new ArgumentException("(expectedDataLength = "
-                                        + expectedDataLength + ") != (pixels.length = "
-                                        + pixels.Length + ")");
+        NativeArray<Color32> mipData = sourceImage.GetPixelData<Color32>(mipLevel);
+        int pixelCount = mipData.Length;
 
         // Store the RGB values in an array format suitable for quantize
         // function
@@ -782,12 +752,10 @@ public abstract class ColorThief
         int numUsedPixels = 0;
         int[][] pixelArray = new int[pixelCount][];
 
-        for (int i = 0; i < pixelCount; i++)
-        {
-            int offset = i * 4;
-            int b = pixels[offset];
-            int g = pixels[offset + 1];
-            int r = pixels[offset + 2];
+        for (int i = 0; i < pixelCount; i++) {
+            int b = Convert.ToInt32(mipData[i].b);
+            int g = Convert.ToInt32(mipData[i].g);
+            int r = Convert.ToInt32(mipData[i].r);
             
             pixelArray[numUsedPixels] = [r, g, b];
             numUsedPixels++;
