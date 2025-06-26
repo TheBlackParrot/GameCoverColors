@@ -748,8 +748,7 @@ public abstract class ColorThief
 
         // numRegardedPixels must be rounded up to avoid an
         // ArrayIndexOutOfBoundsException if all pixels are good.
-
-        int numUsedPixels = 0;
+        
         int[][] pixelArray = new int[pixelCount][];
 
         for (int i = 0; i < pixelCount; i++) {
@@ -757,13 +756,9 @@ public abstract class ColorThief
             int g = Convert.ToInt32(mipData[i].g);
             int r = Convert.ToInt32(mipData[i].r);
             
-            pixelArray[numUsedPixels] = [r, g, b];
-            numUsedPixels++;
+            pixelArray[i] = [r, g, b];
         }
-
-        // Remove unused pixels from the array
-        int[][] copy = new int[numUsedPixels][];
-        Array.Copy(pixelArray, copy, numUsedPixels);
-        return copy;
+        
+        return pixelArray;
     }
 }
