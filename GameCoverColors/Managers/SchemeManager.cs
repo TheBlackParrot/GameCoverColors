@@ -273,7 +273,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         List<QuantizedColor> colors = [];
         try
         {
-            colors = ColorThief.ColorThief.GetPalette(readableTexture, (SavedConfigInstance?.PaletteSize ?? Config.PaletteSize) + 1, 1);
+            colors = ColorThief.ColorThief.GetPalette(readableTexture, (SavedConfigInstance?.PaletteSize ?? Config.PaletteSize) + 1);
             colors.Sort(new QuantizedColorVibrancyComparer());
             Plugin.DebugMessage($"Got {colors.Count} colors");
         }

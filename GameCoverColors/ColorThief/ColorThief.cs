@@ -694,25 +694,17 @@ public class QuantizedColor(Color color)
 public abstract class ColorThief
 {
     private const int DefaultColorCount = 5;
-    private const int DefaultQuality = 10;
     private const bool DefaultIgnoreWhite = true;
 
     /// <summary>
     ///     Use the median cut algorithm to cluster similar colors and return the base color from the largest cluster.
     /// </summary>
     /// <param name="sourceImage">The source image.</param>
-    /// <param name="quality">
-    ///     0 is the highest quality settings. 10 is the default. There is
-    ///     a trade-off between quality and speed. The bigger the number,
-    ///     the faster a color will be returned but the greater the
-    ///     likelihood that it will not be the visually most dominant color.
-    /// </param>
     /// <param name="ignoreWhite">if set to <c>true</c> [ignore white].</param>
     /// <returns></returns>
-    public QuantizedColor GetColor(Texture2D sourceImage, int quality = DefaultQuality,
-        bool ignoreWhite = DefaultIgnoreWhite)
+    public QuantizedColor GetColor(Texture2D sourceImage, bool ignoreWhite = DefaultIgnoreWhite)
     {
-        List<QuantizedColor> palette = GetPalette(sourceImage, DefaultColorCount, quality, ignoreWhite);
+        List<QuantizedColor> palette = GetPalette(sourceImage, DefaultColorCount, ignoreWhite);
         QuantizedColor? dominantColor = palette.FirstOrDefault();
         return dominantColor!;
     }
@@ -722,19 +714,12 @@ public abstract class ColorThief
     /// </summary>
     /// <param name="sourceImage">The source image.</param>
     /// <param name="colorCount">The color count.</param>
-    /// <param name="quality">
-    ///     0 is the highest quality settings. 10 is the default. There is
-    ///     a trade-off between quality and speed. The bigger the number,
-    ///     the faster a color will be returned but the greater the
-    ///     likelihood that it will not be the visually most dominant color.
-    /// </param>
     /// <param name="ignoreWhite">if set to <c>true</c> [ignore white].</param>
     /// <returns></returns>
     /// <code>true</code>
-    public static List<QuantizedColor> GetPalette(Texture2D sourceImage, int colorCount = DefaultColorCount,
-        int quality = DefaultQuality, bool ignoreWhite = DefaultIgnoreWhite)
+    public static List<QuantizedColor> GetPalette(Texture2D sourceImage, int colorCount = DefaultColorCount, bool ignoreWhite = DefaultIgnoreWhite)
     {
-        CMap cmap = GetColorMap(sourceImage, colorCount, quality, ignoreWhite);
+        CMap cmap = GetColorMap(sourceImage, colorCount, ignoreWhite);
         return cmap.GeneratePalette();
     }
 
@@ -743,18 +728,11 @@ public abstract class ColorThief
     /// </summary>
     /// <param name="sourceImage">The source image.</param>
     /// <param name="colorCount">The color count.</param>
-    /// <param name="quality">
-    ///     0 is the highest quality settings. 10 is the default. There is
-    ///     a trade-off between quality and speed. The bigger the number,
-    ///     the faster a color will be returned but the greater the
-    ///     likelihood that it will not be the visually most dominant color.
-    /// </param>
     /// <param name="ignoreWhite">if set to <c>true</c> [ignore white].</param>
     /// <returns></returns>
-    private static CMap GetColorMap(Texture2D sourceImage, int colorCount, int quality = DefaultQuality,
-        bool ignoreWhite = DefaultIgnoreWhite)
+    private static CMap GetColorMap(Texture2D sourceImage, int colorCount, bool ignoreWhite = DefaultIgnoreWhite)
     {
-        int[][] pixelArray = GetPixelsFast(sourceImage, quality, ignoreWhite);
+        int[][] pixelArray = GetPixelsFast(sourceImage, ignoreWhite);
 
         // Send array to quantize function which clusters values using median
         // cut algorithm
@@ -785,7 +763,7 @@ public abstract class ColorThief
         // }
     }
 
-    private static int[][] GetPixelsFast(Texture2D sourceImage, int quality, bool ignoreWhite)
+    private static int[][] GetPixelsFast(Texture2D sourceImage, bool ignoreWhite)
     {
         IEnumerable<int> imageData = GetIntFromPixel(sourceImage);
         int[] pixels = imageData.ToArray();
@@ -805,12 +783,10 @@ public abstract class ColorThief
         // numRegardedPixels must be rounded up to avoid an
         // ArrayIndexOutOfBoundsException if all pixels are good.
 
-        int numRegardedPixels = quality <= 0 ? 0 : (pixelCount + quality - 1) / quality;
-
         int numUsedPixels = 0;
-        int[][] pixelArray = new int[numRegardedPixels][];
+        int[][] pixelArray = new int[pixelCount][];
 
-        for (int i = 0; i < pixelCount; i += quality)
+        for (int i = 0; i < pixelCount; i++)
         {
             int offset = i * 4;
             int b = pixels[offset];
