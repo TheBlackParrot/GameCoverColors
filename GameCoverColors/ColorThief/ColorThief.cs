@@ -694,17 +694,15 @@ public class QuantizedColor(Color color)
 public abstract class ColorThief
 {
     private const int DefaultColorCount = 5;
-    private const bool DefaultIgnoreWhite = true;
 
     /// <summary>
     ///     Use the median cut algorithm to cluster similar colors and return the base color from the largest cluster.
     /// </summary>
     /// <param name="sourceImage">The source image.</param>
-    /// <param name="ignoreWhite">if set to <c>true</c> [ignore white].</param>
     /// <returns></returns>
-    public QuantizedColor GetColor(Texture2D sourceImage, bool ignoreWhite = DefaultIgnoreWhite)
+    public QuantizedColor GetColor(Texture2D sourceImage)
     {
-        List<QuantizedColor> palette = GetPalette(sourceImage, DefaultColorCount, ignoreWhite);
+        List<QuantizedColor> palette = GetPalette(sourceImage);
         QuantizedColor? dominantColor = palette.FirstOrDefault();
         return dominantColor!;
     }
@@ -714,12 +712,11 @@ public abstract class ColorThief
     /// </summary>
     /// <param name="sourceImage">The source image.</param>
     /// <param name="colorCount">The color count.</param>
-    /// <param name="ignoreWhite">if set to <c>true</c> [ignore white].</param>
     /// <returns></returns>
     /// <code>true</code>
-    public static List<QuantizedColor> GetPalette(Texture2D sourceImage, int colorCount = DefaultColorCount, bool ignoreWhite = DefaultIgnoreWhite)
+    public static List<QuantizedColor> GetPalette(Texture2D sourceImage, int colorCount = DefaultColorCount)
     {
-        CMap cmap = GetColorMap(sourceImage, colorCount, ignoreWhite);
+        CMap cmap = GetColorMap(sourceImage, colorCount);
         return cmap.GeneratePalette();
     }
 
@@ -728,11 +725,10 @@ public abstract class ColorThief
     /// </summary>
     /// <param name="sourceImage">The source image.</param>
     /// <param name="colorCount">The color count.</param>
-    /// <param name="ignoreWhite">if set to <c>true</c> [ignore white].</param>
     /// <returns></returns>
-    private static CMap GetColorMap(Texture2D sourceImage, int colorCount, bool ignoreWhite = DefaultIgnoreWhite)
+    private static CMap GetColorMap(Texture2D sourceImage, int colorCount)
     {
-        int[][] pixelArray = GetPixelsFast(sourceImage, ignoreWhite);
+        int[][] pixelArray = GetPixelsFast(sourceImage);
 
         // Send array to quantize function which clusters values using median
         // cut algorithm
@@ -763,7 +759,7 @@ public abstract class ColorThief
         // }
     }
 
-    private static int[][] GetPixelsFast(Texture2D sourceImage, bool ignoreWhite)
+    private static int[][] GetPixelsFast(Texture2D sourceImage)
     {
         IEnumerable<int> imageData = GetIntFromPixel(sourceImage);
         int[] pixels = imageData.ToArray();
@@ -792,14 +788,9 @@ public abstract class ColorThief
             int b = pixels[offset];
             int g = pixels[offset + 1];
             int r = pixels[offset + 2];
-            int a = pixels[offset + 3];
-
-            // If pixel is mostly opaque and not white
-            if (a >= 125 && !(ignoreWhite && r > 250 && g > 250 && b > 250))
-            {
-                pixelArray[numUsedPixels] = [r, g, b];
-                numUsedPixels++;
-            }
+            
+            pixelArray[numUsedPixels] = [r, g, b];
+            numUsedPixels++;
         }
 
         // Remove unused pixels from the array
