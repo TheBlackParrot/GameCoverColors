@@ -26,4 +26,22 @@ public static class Color
 
         return 60 * h1;
     }
+
+    public static float GetSaturation(this UnityEngine.Color color)
+    {
+        float max = Mathf.Max(Mathf.Max(color.r, color.g), color.b);
+        float min = Mathf.Min(Mathf.Min(color.r, color.g), color.b);
+        float chroma = max - min;
+        
+        float lightness = (max - min) / 2;
+        return chroma == 0 ? 0 : chroma / (1 - Mathf.Abs(2 * lightness - 1));
+    }
+
+    public static float GetBrightness(this UnityEngine.Color color)
+    {
+        float max = Mathf.Max(Mathf.Max(color.r, color.g), color.b);
+        float min = Mathf.Min(Mathf.Min(color.r, color.g), color.b);
+        
+        return (max - min) / 2;
+    }
 }
