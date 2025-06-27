@@ -135,7 +135,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     private const double Rad2Deg = Math.PI / 180;
     private static float GetYiqDifference(Color x, Color y) => Mathf.Abs(x.GetYiq() - y.GetYiq());
     private static double GetHueDifference(Color x, Color y) => Math.Sin(Math.Abs(x.GetHue() - y.GetHue()) / 2 * Rad2Deg);
-    private static bool SwapColors(Color x, Color y) => Config.PreferHueDifference ? x.GetHue() < y.GetHue() : x.GetYiq() < y.GetYiq();
+    private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
 
 #if PRE_V1_37_1
     private static void LoadOverrides(IPreviewBeatmapLevel beatmapLevel)
