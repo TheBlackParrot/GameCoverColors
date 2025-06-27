@@ -22,7 +22,8 @@ namespace GameCoverColors.UI;
 internal class SettingsViewController : IInitializable, IDisposable, INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
-    private void NotifyPropertyChanged([CallerMemberName] string? propertyName = null) =>
+
+    internal void NotifyPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     internal void NotifyPropertiesChanged()
@@ -61,7 +62,12 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     [UIComponent("ModalToLetPeopleKnowThingHappened")]
     private ModalView? _modalToLetPeopleKnowThingHappened = null;
     
-    [UIComponent("saveSettingsButton")] internal Button? SaveSettingsButton = null;
+    [UIComponent("saveSettingsButton")]
+    internal Button? SaveSettingsButton = null;
+    
+    [UIValue("MinNoteContrastDiffText")]
+    [UsedImplicitly]
+    internal string MinNoteContrastDiffText => $"Note {(Config.PreferHueDifference ? "Hue" : "Contrast")} Difference";
     // ReSharper restore FieldCanBeMadeReadOnly.Global
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 

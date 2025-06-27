@@ -117,8 +117,8 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     {
         public int Compare(QuantizedColor x, QuantizedColor y)
         {
-            float yiqX = x.UnityColor.GetYiq();
-            float yiqY = y.UnityColor.GetYiq();
+            float yiqX = Config.PreferHueDifference ? x.UnityColor.GetHue() : x.UnityColor.GetYiq();
+            float yiqY = Config.PreferHueDifference ? y.UnityColor.GetHue() : y.UnityColor.GetYiq();
 
             switch (true)
             {
@@ -132,8 +132,10 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         }
     }
     
+    private const double Rad2Deg = Math.PI / 180;
     private static float GetYiqDifference(Color x, Color y) => Mathf.Abs(x.GetYiq() - y.GetYiq());
-    private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
+    private static double GetHueDifference(Color x, Color y) => Math.Sin(Math.Abs(x.GetHue() - y.GetHue()) / 2 * Rad2Deg);
+    private static bool SwapColors(Color x, Color y) => Config.PreferHueDifference ? x.GetHue() < y.GetHue() : x.GetYiq() < y.GetYiq();
 
 #if PRE_V1_37_1
     private static void LoadOverrides(IPreviewBeatmapLevel beatmapLevel)
@@ -291,7 +293,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         
         for (int i = 0; i < colors.Count; i++)
         {
-            float yiqDiff = GetYiqDifference(saberAColor, colors[i].UnityColor);
+            float yiqDiff = Config.PreferHueDifference
+                ? (float)GetHueDifference(saberAColor, colors[i].UnityColor) * 1000
+                : GetYiqDifference(saberAColor, colors[i].UnityColor);
             
             if (yiqDiff > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
             {

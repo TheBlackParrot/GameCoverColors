@@ -11,6 +11,12 @@
                     hover-hint="By default, darker colors are placed on the right. This places them on the left."/>
 
     <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
+
+    <toggle-setting value="PreferHueDifference" apply-on-change="true"
+                    text="Prefer Hue Difference"
+                    hover-hint="By default, color contrast differences are maintained between the left and right note colors. This will force it to use hue differences instead."/>
+
+    <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
     
     <toggle-setting value="FlipLightSchemes" apply-on-change="true"
                     text="Flip Light Scheme Preference"

@@ -24,6 +24,7 @@ internal class PluginConfig
     public virtual bool FlipLightColors { get; set; } = false;
     public virtual bool FlipBoostColors { get; set; } = false;
     public virtual bool FlipLightSchemes { get; set; } = false;
+    public virtual bool PreferHueDifference { get; set; } = false;
 }
 
 [JsonObject(MemberSerialization.OptIn)]
