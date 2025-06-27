@@ -289,26 +289,29 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         
         Color saberBColor = Color.magenta; // rider get off my ass
 
-        float mostDifferentContrast = 0;
+        float mostDifferentValue = 0;
         
         for (int i = 0; i < colors.Count; i++)
         {
-            float yiqDiff = Config.PreferHueDifference
+            float diff = Config.PreferHueDifference
                 ? (float)GetHueDifference(saberAColor, colors[i].UnityColor) * 1000
                 : GetYiqDifference(saberAColor, colors[i].UnityColor);
             
-            if (yiqDiff > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
+            if (diff > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
             {
-                saberBColor = colors[i].UnityColor;
-                colors.RemoveAt(i);
-                break;
+                if (!Config.PreferHueDifference || (Config.PreferHueDifference && colors[i].UnityColor.GetSaturation() < 0.1))
+                {
+                    saberBColor = colors[i].UnityColor;
+                    colors.RemoveAt(i);
+                    break;   
+                }
             }
             
             // ReSharper disable once InvertIf
-            if (yiqDiff > mostDifferentContrast)
+            if (diff > mostDifferentValue)
             {
                 saberBColor = colors[i].UnityColor;
-                mostDifferentContrast = yiqDiff;
+                mostDifferentValue = diff;
             }
         }
 
