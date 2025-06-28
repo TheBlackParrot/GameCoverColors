@@ -255,14 +255,14 @@ internal static class Mmcq
         int[] lookaheadsum = new int[VboxLength];
         for (int l = 0; l < lookaheadsum.Length; l++) lookaheadsum[l] = -1;
 
-        int i, j, k, sum, index;
+        int sum, index;
 
         if (maxw == rw)
-            for (i = vbox.R1; i <= vbox.R2; i++)
+            for (int i = vbox.R1; i <= vbox.R2; i++)
             {
                 sum = 0;
-                for (j = vbox.G1; j <= vbox.G2; j++)
-                for (k = vbox.B1; k <= vbox.B2; k++)
+                for (int j = vbox.G1; j <= vbox.G2; j++)
+                for (int k = vbox.B1; k <= vbox.B2; k++)
                 {
                     index = GetColorIndex(i, j, k);
                     sum += histo[index];
@@ -272,11 +272,11 @@ internal static class Mmcq
                 partialsum[i] = total;
             }
         else if (maxw == gw)
-            for (i = vbox.G1; i <= vbox.G2; i++)
+            for (int i = vbox.G1; i <= vbox.G2; i++)
             {
                 sum = 0;
-                for (j = vbox.R1; j <= vbox.R2; j++)
-                for (k = vbox.B1; k <= vbox.B2; k++)
+                for (int j = vbox.R1; j <= vbox.R2; j++)
+                for (int k = vbox.B1; k <= vbox.B2; k++)
                 {
                     index = GetColorIndex(j, i, k);
                     sum += histo[index];
@@ -286,11 +286,11 @@ internal static class Mmcq
                 partialsum[i] = total;
             }
         else /* maxw == bw */
-            for (i = vbox.B1; i <= vbox.B2; i++)
+            for (int i = vbox.B1; i <= vbox.B2; i++)
             {
                 sum = 0;
-                for (j = vbox.R1; j <= vbox.R2; j++)
-                for (k = vbox.G1; k <= vbox.G2; k++)
+                for (int j = vbox.R1; j <= vbox.R2; j++)
+                for (int k = vbox.G1; k <= vbox.G2; k++)
                 {
                     index = GetColorIndex(j, k, i);
                     sum += histo[index];
@@ -300,7 +300,7 @@ internal static class Mmcq
                 partialsum[i] = total;
             }
 
-        for (i = 0; i < VboxLength; i++)
+        for (int i = 0; i < VboxLength; i++)
             if (partialsum[i] != -1)
                 lookaheadsum[i] = total - partialsum[i];
 
@@ -327,12 +327,8 @@ internal static class Mmcq
 
         while (niters < MaxIterations)
         {
-#if PRE_V1_34_2
-            // i... ok. sure. whatever
+            // ReSharper disable once UseIndexFromEndExpression
             VBox vbox = lh[lh.Count - 1];
-#else
-            VBox vbox = lh[^1];
-#endif
             if (vbox.Count(false) == 0)
             {
                 lh.Sort(comparator);
@@ -521,7 +517,8 @@ public class VBox
             if (ntot > 0)
                 _avg =
                 [
-                    Math.Abs(rsum / ntot), Math.Abs(gsum / ntot),
+                    Math.Abs(rsum / ntot),
+                    Math.Abs(gsum / ntot),
                     Math.Abs(bsum / ntot)
                 ];
             else
@@ -568,7 +565,7 @@ internal class VBoxComparer : IComparer<VBox>
         // Otherwise sort by products
         int a = aCount * aVolume;
         int b = bCount * bVolume;
-        return (a < b) ? -1 : ((a > b) ? 1 : 0);
+        return a < b ? -1 : (a > b ? 1 : 0);
     }
 }
 
@@ -601,8 +598,16 @@ public class CMap
 
     public int[] Map(int[] color)
     {
-        foreach (VBox vbox in _vboxes.Where(vbox => vbox.Contains(color))) return vbox.Avg(false);
-        return Nearest(color);
+        try
+        {
+            return _vboxes.First(box => box.Contains(color)).Avg(false);
+        }
+        catch (InvalidOperationException)
+        {
+            return Nearest(color);
+        }
+        //foreach (VBox vbox in _vboxes.Where(vbox => vbox.Contains(color))) return vbox.Avg(false);
+        //return Nearest(color);
     }
 
     private int[] Nearest(int[] color)
@@ -629,7 +634,7 @@ public class CMap
     public VBox FindColor(double targetLuma, double minLuma, double maxLuma, double targetSaturation,
         double minSaturation, double maxSaturation)
     {
-        VBox max = null!;
+        VBox? max = null;
         double maxValue = 0;
         int highestPopulation = _vboxes.Select(p => p.Count(false)).Max();
 
@@ -646,7 +651,7 @@ public class CMap
                 double thisValue = Mmcq.CreateComparisonValue(sat, targetSaturation, luma, targetLuma,
                     swatch.Count(false), highestPopulation);
 
-                if (thisValue > maxValue)
+                if (max == null || thisValue > maxValue)
                 {
                     max = swatch;
                     maxValue = thisValue;
@@ -654,7 +659,7 @@ public class CMap
             }
         }
 
-        return max;
+        return max!;
     }
 
     private static Color FromRgb(int red, int green, int blue)
