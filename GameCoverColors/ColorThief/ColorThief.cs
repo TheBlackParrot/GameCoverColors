@@ -56,17 +56,19 @@ public struct Color
             h1 = (g - b) / chroma % 6;
         else if (max == g)
             h1 = 2 + (b - r) / chroma;
-        else //if (max == b)
+        else
             h1 = 4 + (r - g) / chroma;
 
         double lightness = 0.5 * (max - min);
         double saturation = chroma == 0 ? 0 : chroma / (1 - Math.Abs(2 * lightness - 1));
-        HslColor ret;
-        ret.H = 60 * h1;
-        ret.S = saturation;
-        ret.L = lightness;
-        ret.A = toDouble * A;
-        return ret;
+        
+        return new HslColor
+        {
+            H = 60 * h1,
+            S = saturation,
+            L = lightness,
+            A = toDouble * A
+        };
         // ReSharper restore CompareOfFloatsByEqualityOperator
     }
 }
@@ -121,12 +123,12 @@ internal static class Mmcq
     ///     Gets the histo.
     /// </summary>
     /// <param name="pixels">The pixels.</param>
-    /// <returns>Histo (1-d array, giving the number of pixels in each quantized region of color space), or null on error.</returns>
+    /// <returns>Histo (1-d array, giving the number of pixels in each quantized region of color space).</returns>
     private static int[] GetHisto(IEnumerable<int[]> pixels)
     {
         int[] histo = new int[Histosize];
 
-        foreach (int[]? pixel in pixels)
+        foreach (int[] pixel in pixels)
         {
             int rval = pixel[0] >> Rshift;
             int gval = pixel[1] >> Rshift;
@@ -148,7 +150,7 @@ internal static class Mmcq
         int numPixels = pixels.Count;
         for (int i = 0; i < numPixels; i++)
         {
-            int[]? pixel = pixels[i];
+            int[] pixel = pixels[i];
             int rval = pixel[0] >> Rshift;
             int gval = pixel[1] >> Rshift;
             int bval = pixel[2] >> Rshift;
@@ -327,9 +329,9 @@ internal static class Mmcq
         {
 #if PRE_V1_34_2
             // i... ok. sure. whatever
-            VBox? vbox = lh[lh.Count - 1];
+            VBox vbox = lh[lh.Count - 1];
 #else
-            VBox? vbox = lh[^1];
+            VBox vbox = lh[^1];
 #endif
             if (vbox.Count(false) == 0)
             {
@@ -389,7 +391,7 @@ internal static class Mmcq
 
         // calculate the actual colors
         CMap cmap = new();
-        foreach (VBox? vb in pq) cmap.Push(vb);
+        foreach (VBox vb in pq) cmap.Push(vb);
 
         return cmap;
     }
@@ -466,15 +468,12 @@ public class VBox
         if (_count == null || force)
         {
             int npix = 0;
-            int i;
-
-            for (i = R1; i <= R2; i++)
+            
+            for (int i = R1; i <= R2; i++)
             {
-                int j;
-                for (j = G1; j <= G2; j++)
+                for (int j = G1; j <= G2; j++)
                 {
-                    int k;
-                    for (k = B1; k <= B2; k++)
+                    for (int k = B1; k <= B2; k++)
                     {
                         int index = Mmcq.GetColorIndex(i, j, k);
                         npix += _histo[index];
@@ -502,16 +501,12 @@ public class VBox
             int rsum = 0;
             int gsum = 0;
             int bsum = 0;
-
-            int i;
-
-            for (i = R1; i <= R2; i++)
+            
+            for (int i = R1; i <= R2; i++)
             {
-                int j;
-                for (j = G1; j <= G2; j++)
+                for (int j = G1; j <= G2; j++)
                 {
-                    int k;
-                    for (k = B1; k <= B2; k++)
+                    for (int k = B1; k <= B2; k++)
                     {
                         int histoindex = Mmcq.GetColorIndex(i, j, k);
                         int hval = _histo[histoindex];
@@ -606,16 +601,16 @@ public class CMap
 
     public int[] Map(int[] color)
     {
-        foreach (VBox? vbox in _vboxes.Where(vbox => vbox.Contains(color))) return vbox.Avg(false);
+        foreach (VBox vbox in _vboxes.Where(vbox => vbox.Contains(color))) return vbox.Avg(false);
         return Nearest(color);
     }
 
     private int[] Nearest(int[] color)
     {
-        double d1 = 0;
+        double d1 = double.MaxValue;
         int[] pColor = null!;
 
-        foreach (VBox? t in _vboxes)
+        foreach (VBox t in _vboxes)
         {
             int[] vbColor = t.Avg(false);
             double d2 = Math.Sqrt(Math.Pow(color[0] - vbColor[0], 2)
@@ -638,7 +633,7 @@ public class CMap
         double maxValue = 0;
         int highestPopulation = _vboxes.Select(p => p.Count(false)).Max();
 
-        foreach (VBox? swatch in _vboxes)
+        foreach (VBox swatch in _vboxes)
         {
             int[] avg = swatch.Avg(false);
             HslColor hsl = FromRgb(avg[0], avg[1], avg[2]).ToHsl();
