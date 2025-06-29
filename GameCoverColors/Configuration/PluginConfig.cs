@@ -19,7 +19,7 @@ internal class PluginConfig
     public virtual int TextureSize { get; set; } = 64;
     public virtual int KernelSize { get; set; } = 1;
     public virtual int PaletteSize { get; set; } = 16;
-    public virtual int MinimumContrastDifference { get; set; } = 350;
+    public virtual int MinimumDifference { get; set; } = 350;
     public virtual bool FlipNoteColors { get; set; } = false;
     public virtual bool FlipLightColors { get; set; } = false;
     public virtual bool FlipBoostColors { get; set; } = false;
@@ -34,14 +34,16 @@ internal sealed class SavedConfig
     [JsonProperty] public int TextureSize { get; set; } = Config.TextureSize;
     [JsonProperty] public int KernelSize { get; set; } = Config.KernelSize;
     [JsonProperty] public int PaletteSize { get; set; } = Config.PaletteSize;
-    [JsonProperty] public int MinimumContrastDifference { get; set; } = Config.MinimumContrastDifference;
+    [JsonProperty] public int MinimumDifference { get; set; } = Config.MinimumDifference;
+    [JsonProperty] public string DifferenceTypePreference { get; set; } = Config.DifferenceTypePreference;
 
     internal SavedConfig(PluginConfig config)
     {
         TextureSize = config.TextureSize;
         KernelSize = config.KernelSize;
         PaletteSize = config.PaletteSize;
-        MinimumContrastDifference = config.MinimumContrastDifference;
+        MinimumDifference = config.MinimumDifference;
+        DifferenceTypePreference = config.DifferenceTypePreference;
     }
 
     internal SavedConfig() { }

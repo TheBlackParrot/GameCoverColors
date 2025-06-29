@@ -95,9 +95,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         {
             float diffX = 0;
             float diffY = 0;
-            switch (Config.DifferenceTypePreference)
+            switch (SavedConfigInstance?.DifferenceTypePreference ?? Config.DifferenceTypePreference)
             {
-                case "Contrast":
+                case "YIQ (Luma)":
                     diffX = x.GetYiq();
                     diffY = y.GetYiq();
                     break;
@@ -272,6 +272,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 
         HistogramPaletteBuilder histogramPaletteBuilder = new(readableTexture);
         int count = SavedConfigInstance?.PaletteSize ?? Config.PaletteSize;
+        string differenceType = SavedConfigInstance?.DifferenceTypePreference ?? Config.DifferenceTypePreference;
         List<Color> colors = [];
         
         for (int additionalBuckets = 0; colors.Count < count && additionalBuckets < 32; additionalBuckets += 4)
@@ -292,26 +293,31 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         for (int i = 0; i < colors.Count; i++)
         {
             float diff = 0;
-            switch (Config.DifferenceTypePreference)
+            switch (differenceType)
             {
-                case "Contrast": diff = GetYiqDifference(saberAColor, colors[i]); break;
+                case "YIQ (Luma)": diff = GetYiqDifference(saberAColor, colors[i]); break;
                 case "Hue": diff = (float)GetHueDifference(saberAColor, colors[i]); break;
                 case "Saturation": diff = GetSaturationDifference(saberAColor, colors[i]); break;
                 case "Value": diff = GetValueDifference(saberAColor, colors[i]); break;
                 case "Vibrancy": diff = GetVibrancyDifference(saberAColor, colors[i]); break;
             }
             
-            if (diff > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
+            if (diff > (SavedConfigInstance?.MinimumDifference ?? Config.MinimumDifference))
             {
-                if (Config.DifferenceTypePreference == "Contrast" ||
-                    Config.DifferenceTypePreference == "Saturation" ||
-                    Config.DifferenceTypePreference == "Value" ||
-                    Config.DifferenceTypePreference == "Vibrancy" ||
-                    (Config.DifferenceTypePreference == "Hue" && colors[i].GetSaturation() < 0.1))
+                if (differenceType == "Hue")
+                {
+                    if (colors[i].GetSaturation() < 0.1)
+                    {
+                        saberBColor = colors[i];
+                        colors.RemoveAt(i);
+                        break;
+                    }
+                }
+                else
                 {
                     saberBColor = colors[i];
                     colors.RemoveAt(i);
-                    break;   
+                    break;
                 }
             }
             

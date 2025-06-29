@@ -23,7 +23,7 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    internal void NotifyPropertyChanged([CallerMemberName] string? propertyName = null) =>
+    private void NotifyPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     internal void NotifyPropertiesChanged()
@@ -67,7 +67,7 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     
     [UIValue("MinNoteContrastDiffText")]
     [UsedImplicitly]
-    internal string MinNoteContrastDiffText => $"Note Color {Config.DifferenceTypePreference} Difference";
+    internal string MinNoteContrastDiffText => $"Note {Config.DifferenceTypePreference} Difference";
     // ReSharper restore FieldCanBeMadeReadOnly.Global
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 
@@ -224,18 +224,41 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     
     protected int MinimumContrastDifference
     {
-        get => SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference;
+        get => SavedConfigInstance?.MinimumDifference ?? Config.MinimumDifference;
         set
         {
             if (SavedConfigInstance == null)
             {
-                Config.MinimumContrastDifference = value;
+                Config.MinimumDifference = value;
             }
             else
             {
-                SavedConfigInstance.MinimumContrastDifference = value;
+                SavedConfigInstance.MinimumDifference = value;
             }
 
+            NotifyPropertyChanged();
+        }
+    }
+    
+    [UIValue("DifferenceTypePreferenceChoices")]
+    [UsedImplicitly]
+    private object[] _differenceTypePreferenceChoices = ["Hue", "Saturation", "Value", "Vibrancy", "YIQ (Luma)"];
+    
+    protected string DifferenceTypePreference
+    {
+        get => SavedConfigInstance?.DifferenceTypePreference ?? Config.DifferenceTypePreference;
+        set
+        {
+            if (SavedConfigInstance == null)
+            {
+                Config.DifferenceTypePreference = value;
+            }
+            else
+            {
+                SavedConfigInstance.DifferenceTypePreference = value;
+            }
+
+            Instance?.NotifyPropertyChanged(nameof(MinNoteContrastDiffText));
             NotifyPropertyChanged();
         }
     }

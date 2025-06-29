@@ -36,14 +36,6 @@ public static class Color
         return chroma == 0 ? 0 : chroma / (1 - Mathf.Abs(2 * lightness - 1));
     }
 
-    public static float GetBrightness(this UnityEngine.Color color)
-    {
-        float max = Mathf.Max(Mathf.Max(color.r, color.g), color.b);
-        float min = Mathf.Min(Mathf.Min(color.r, color.g), color.b);
-        
-        return (max - min) / 2;
-    }
-
     public static float GetValue(this UnityEngine.Color color) => Mathf.Max(Mathf.Max(color.r, color.g), color.b);
 
     public static float GetVibrancy(this UnityEngine.Color color)

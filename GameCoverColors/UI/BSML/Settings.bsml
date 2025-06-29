@@ -67,6 +67,10 @@
 
     <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
 
+    <dropdown-list-setting value="DifferenceTypePreference" apply-on-change="true"
+                           text="Color Difference Method" choices="DifferenceTypePreferenceChoices"
+                           hover-hint="Comparer to determine differences in color"/>
+
     <slider-setting id="minNoteContrastDiffSlider"
                     value="MinimumContrastDifference" text="~MinNoteContrastDiffText"
                     integer-only="true" min="0" max="1000" increment="10"
