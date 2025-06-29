@@ -67,7 +67,7 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     
     [UIValue("MinNoteContrastDiffText")]
     [UsedImplicitly]
-    internal string MinNoteContrastDiffText => $"Note {(Config.PreferHueDifference ? "Hue" : "Contrast")} Difference";
+    internal string MinNoteContrastDiffText => $"Note Color {Config.DifferenceTypePreference} Difference";
     // ReSharper restore FieldCanBeMadeReadOnly.Global
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 

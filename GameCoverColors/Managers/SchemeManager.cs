@@ -113,18 +113,35 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         }
     }
     
-    private class ColorYiqComparer : IComparer<Color>
+    private class ColorComparer : IComparer<Color>
     {
         public int Compare(Color x, Color y)
         {
-            float yiqX = Config.PreferHueDifference ? x.GetHue() : x.GetYiq();
-            float yiqY = Config.PreferHueDifference ? y.GetHue() : y.GetYiq();
+            float diffX = 0;
+            float diffY = 0;
+            switch (Config.DifferenceTypePreference)
+            {
+                case "Contrast":
+                    diffX = x.GetYiq();
+                    diffY = y.GetYiq();
+                    break;
+                
+                case "Hue":
+                    diffX = x.GetHue();
+                    diffY = y.GetHue();
+                    break;
+                
+                case "Value":
+                    diffX = x.GetValue();
+                    diffY = y.GetValue();
+                    break;
+            }
 
             switch (true)
             {
-                case true when yiqX > yiqY:
+                case true when diffX > diffY:
                     return -1;
-                case true when yiqX < yiqY:
+                case true when diffX < diffY:
                     return 1;
                 default:
                     return 0;
@@ -135,6 +152,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     private const double Rad2Deg = Math.PI / 180;
     private static float GetYiqDifference(Color x, Color y) => Mathf.Abs(x.GetYiq() - y.GetYiq());
     private static double GetHueDifference(Color x, Color y) => Math.Sin(Math.Abs(x.GetHue() - y.GetHue()) / 2 * Rad2Deg) * 1000;
+    private static float GetValueDifference(Color x, Color y) => Mathf.Abs(x.GetValue() - y.GetValue()) * 1000;
     private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
 
 #if PRE_V1_37_1
@@ -293,13 +311,19 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         
         for (int i = 0; i < colors.Count; i++)
         {
-            float diff = Config.PreferHueDifference
-                ? (float)GetHueDifference(saberAColor, colors[i])
-                : GetYiqDifference(saberAColor, colors[i]);
+            float diff = 0;
+            switch (Config.DifferenceTypePreference)
+            {
+                case "Contrast": diff = GetYiqDifference(saberAColor, colors[i]); break;
+                case "Hue": diff = (float)GetHueDifference(saberAColor, colors[i]); break;
+                case "Value": diff = GetValueDifference(saberAColor, colors[i]); break;
+            }
             
             if (diff > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
             {
-                if (!Config.PreferHueDifference || (Config.PreferHueDifference && colors[i].GetSaturation() < 0.1))
+                if (Config.DifferenceTypePreference == "Contrast" ||
+                    Config.DifferenceTypePreference == "Value" ||
+                    (Config.DifferenceTypePreference == "Hue" && colors[i].GetSaturation() < 0.1))
                 {
                     saberBColor = colors[i];
                     colors.RemoveAt(i);
@@ -335,7 +359,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             boostBColor = x;
         }
         
-        colors.Sort(new ColorYiqComparer());
+        colors.Sort(new ColorComparer());
         
         Color lightAColor = colors[0];
         Color lightBColor = colors[1];

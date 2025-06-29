@@ -44,4 +44,6 @@ public static class Color
         
         return (max - min) / 2;
     }
+
+    public static float GetValue(this UnityEngine.Color color) => Mathf.Max(Mathf.Max(color.r, color.g), color.b);
 }

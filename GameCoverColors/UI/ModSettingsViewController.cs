@@ -77,12 +77,16 @@ internal class ModSettingsViewController : IInitializable, IDisposable
         set => Config.FlipLightSchemes = value;
     }
 
-    protected bool PreferHueDifference
+    [UIValue("DifferenceTypePreferenceChoices")]
+    [UsedImplicitly]
+    private object[] _differenceTypePreferenceChoices = ["Contrast", "Hue", "Value"];
+    
+    protected string DifferenceTypePreference
     {
-        get => Config.PreferHueDifference;
+        get => Config.DifferenceTypePreference;
         set
         {
-            Config.PreferHueDifference = value;
+            Config.DifferenceTypePreference = value;
             SettingsViewController.Instance?.NotifyPropertyChanged(nameof(SettingsViewController.MinNoteContrastDiffText));
         }
     }
