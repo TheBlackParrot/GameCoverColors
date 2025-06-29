@@ -79,7 +79,7 @@ internal class ModSettingsViewController : IInitializable, IDisposable
 
     [UIValue("DifferenceTypePreferenceChoices")]
     [UsedImplicitly]
-    private object[] _differenceTypePreferenceChoices = ["Contrast", "Hue", "Value", "Vibrancy"];
+    private object[] _differenceTypePreferenceChoices = ["Contrast", "Hue", "Saturation", "Value", "Vibrancy"];
     
     protected string DifferenceTypePreference
     {

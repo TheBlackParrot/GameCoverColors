@@ -88,25 +88,6 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         return standardLevelDetailViewController._beatmapLevel;
     }
 #endif
-
-    private class ColorVibrancyComparer : IComparer<Color>
-    {
-        public int Compare(Color x, Color y)
-        {
-            float xVibrancy = x.GetVibrancy();
-            float yVibrancy = y.GetVibrancy();
-            
-            switch (true)
-            {
-                case true when xVibrancy > yVibrancy:
-                    return -1;
-                case true when xVibrancy < yVibrancy:
-                    return 1;
-                default:
-                    return 0;
-            }
-        }
-    }
     
     private class ColorComparer : IComparer<Color>
     {
@@ -135,17 +116,14 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                     diffX = x.GetVibrancy();
                     diffY = y.GetVibrancy();
                     break;
+                
+                case "Saturation":
+                    diffX = x.GetSaturation();
+                    diffY = y.GetSaturation();
+                    break;
             }
-
-            switch (true)
-            {
-                case true when diffX > diffY:
-                    return -1;
-                case true when diffX < diffY:
-                    return 1;
-                default:
-                    return 0;
-            }
+            
+            return diffX > diffY ? -1 : (diffX < diffY ? 1 : 0);
         }
     }
     
@@ -154,6 +132,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     private static double GetHueDifference(Color x, Color y) => Math.Sin(Math.Abs(x.GetHue() - y.GetHue()) / 2 * Rad2Deg) * 1000;
     private static float GetValueDifference(Color x, Color y) => Mathf.Abs(x.GetValue() - y.GetValue()) * 1000;
     private static float GetVibrancyDifference(Color x, Color y) => Mathf.Abs(x.GetVibrancy() - y.GetVibrancy()) * 1000;
+    private static float GetSaturationDifference(Color x, Color y) => Mathf.Abs(x.GetSaturation() - y.GetSaturation()) * 1000;
     private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
 
 #if PRE_V1_37_1
@@ -300,8 +279,8 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             colors = histogramPaletteBuilder.BinPixels(4 + additionalBuckets).Take(count).ToList();
             Plugin.DebugMessage($"Got {colors.Count} colors with {4 + additionalBuckets} buckets (wants {count} colors)");
         }
-        
-        colors.Sort(new ColorVibrancyComparer());
+
+        colors.Sort(new ColorComparer());
         
         Color saberAColor = colors[0];
         colors.RemoveAt(0);
@@ -317,6 +296,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             {
                 case "Contrast": diff = GetYiqDifference(saberAColor, colors[i]); break;
                 case "Hue": diff = (float)GetHueDifference(saberAColor, colors[i]); break;
+                case "Saturation": diff = GetSaturationDifference(saberAColor, colors[i]); break;
                 case "Value": diff = GetValueDifference(saberAColor, colors[i]); break;
                 case "Vibrancy": diff = GetVibrancyDifference(saberAColor, colors[i]); break;
             }
@@ -324,6 +304,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             if (diff > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
             {
                 if (Config.DifferenceTypePreference == "Contrast" ||
+                    Config.DifferenceTypePreference == "Saturation" ||
                     Config.DifferenceTypePreference == "Value" ||
                     Config.DifferenceTypePreference == "Vibrancy" ||
                     (Config.DifferenceTypePreference == "Hue" && colors[i].GetSaturation() < 0.1))
