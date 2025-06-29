@@ -274,14 +274,14 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 
         HistogramPaletteBuilder histogramPaletteBuilder = new(readableTexture);
         int count = SavedConfigInstance?.PaletteSize ?? Config.PaletteSize;
-        List<Color> colors = histogramPaletteBuilder.BinPixels(5).Take(count).ToList();
+        List<Color> colors = [];
         
-        Plugin.DebugMessage($"Got {colors.Count} colors");
-        for (int additionalBuckets = 4; colors.Count < count; additionalBuckets += 4)
+        for (int additionalBuckets = 0; colors.Count < count && additionalBuckets < 32; additionalBuckets += 4)
         {
-            Plugin.DebugMessage($"Didn't have enough colors ({colors.Count}, wants {count}), trying {additionalBuckets} additional buckets...");
-            colors = histogramPaletteBuilder.BinPixels(5 + additionalBuckets);
+            colors = histogramPaletteBuilder.BinPixels(4 + additionalBuckets).Take(count).ToList();
+            Plugin.DebugMessage($"Got {colors.Count} colors with {4 + additionalBuckets} buckets (wants {count} colors)");
         }
+        
         colors.Sort(new ColorVibrancyComparer());
         
         Color saberAColor = colors[0];
