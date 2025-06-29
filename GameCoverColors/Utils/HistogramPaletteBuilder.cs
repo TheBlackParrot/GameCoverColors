@@ -20,9 +20,9 @@ internal class HistogramPaletteBuilder
     private static string GetKeyForPixel(Color pixel, int bucketsPerDimension) {
         int bucketSize = DimensionMax / bucketsPerDimension;
         
-        double redBucket = Math.Floor(pixel.r * 255 / bucketSize);
-        double greenBucket = Math.Floor(pixel.g * 255 / bucketSize);
-        double blueBucket = Math.Floor(pixel.b * 255 / bucketSize);
+        double redBucket = Math.Round(Mathf.Min(pixel.r * 255, 255) / bucketSize);
+        double greenBucket = Math.Round(Mathf.Min(pixel.g * 255, 255) / bucketSize);
+        double blueBucket = Math.Round(Mathf.Min(pixel.b * 255, 255) / bucketSize);
         
         return redBucket + ":" + greenBucket + ":" + blueBucket;
     }

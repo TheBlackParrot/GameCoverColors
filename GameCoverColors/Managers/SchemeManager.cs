@@ -134,7 +134,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     
     private const double Rad2Deg = Math.PI / 180;
     private static float GetYiqDifference(Color x, Color y) => Mathf.Abs(x.GetYiq() - y.GetYiq());
-    private static double GetHueDifference(Color x, Color y) => Math.Sin(Math.Abs(x.GetHue() - y.GetHue()) / 2 * Rad2Deg);
+    private static double GetHueDifference(Color x, Color y) => Math.Sin(Math.Abs(x.GetHue() - y.GetHue()) / 2 * Rad2Deg) * 1000;
     private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
 
 #if PRE_V1_37_1
@@ -294,7 +294,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         for (int i = 0; i < colors.Count; i++)
         {
             float diff = Config.PreferHueDifference
-                ? (float)GetHueDifference(saberAColor, colors[i]) * 1000
+                ? (float)GetHueDifference(saberAColor, colors[i])
                 : GetYiqDifference(saberAColor, colors[i]);
             
             if (diff > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
