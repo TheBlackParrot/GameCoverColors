@@ -7,10 +7,10 @@ using System.Threading;
 #endif
 using System.Threading.Tasks;
 using BeatSaberMarkupLanguage;
-using GameCoverColors.ColorThief;
 using GameCoverColors.Configuration;
 using GameCoverColors.Extensions;
 using GameCoverColors.UI;
+using GameCoverColors.Utils;
 #if PRE_V1_37_1
 using IPA.Utilities;
 #endif
@@ -89,14 +89,14 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     }
 #endif
 
-    private class QuantizedColorVibrancyComparer : IComparer<QuantizedColor>
+    private class ColorVibrancyComparer : IComparer<Color>
     {
-        public int Compare(QuantizedColor x, QuantizedColor y)
+        public int Compare(Color x, Color y)
         {
-            float xMin = x.UnityColor.MinColorComponent();
-            float xMax = Mathf.Max(x.UnityColor.maxColorComponent, 0.001f);
-            float yMin = y.UnityColor.MinColorComponent();
-            float yMax = Mathf.Max(y.UnityColor.maxColorComponent, 0.001f);
+            float xMin = x.MinColorComponent();
+            float xMax = Mathf.Max(x.maxColorComponent, 0.001f);
+            float yMin = y.MinColorComponent();
+            float yMax = Mathf.Max(y.maxColorComponent, 0.001f);
             
             float xVibrancy = ((xMax + xMin) * (xMax - xMin)) / xMax;
             float yVibrancy = ((yMax + yMin) * (yMax - yMin)) / yMax;
@@ -113,12 +113,12 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         }
     }
     
-    private class QuantizedColorYiqComparer : IComparer<QuantizedColor>
+    private class ColorYiqComparer : IComparer<Color>
     {
-        public int Compare(QuantizedColor x, QuantizedColor y)
+        public int Compare(Color x, Color y)
         {
-            float yiqX = Config.PreferHueDifference ? x.UnityColor.GetHue() : x.UnityColor.GetYiq();
-            float yiqY = Config.PreferHueDifference ? y.UnityColor.GetHue() : y.UnityColor.GetYiq();
+            float yiqX = Config.PreferHueDifference ? x.GetHue() : x.GetYiq();
+            float yiqY = Config.PreferHueDifference ? y.GetHue() : y.GetYiq();
 
             switch (true)
             {
@@ -271,20 +271,20 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 #if DEBUG
         await File.WriteAllBytesAsync("UserData/GameCoverColors/test-postblur.png", readableTexture.EncodeToPNG());
 #endif
-            
-        List<QuantizedColor> colors = [];
-        try
-        {
-            colors = ColorThief.ColorThief.GetPalette(readableTexture, (SavedConfigInstance?.PaletteSize ?? Config.PaletteSize) + 1);
-            colors.Sort(new QuantizedColorVibrancyComparer());
-            Plugin.DebugMessage($"Got {colors.Count} colors");
-        }
-        catch (Exception e)
-        {
-            Plugin.Log.Error(e);
-        }
 
-        Color saberAColor = colors[0].UnityColor;
+        HistogramPaletteBuilder histogramPaletteBuilder = new(readableTexture);
+        int count = SavedConfigInstance?.PaletteSize ?? Config.PaletteSize;
+        List<Color> colors = histogramPaletteBuilder.BinPixels(5).Take(count).ToList();
+        
+        Plugin.DebugMessage($"Got {colors.Count} colors");
+        for (int additionalBuckets = 4; colors.Count < count; additionalBuckets += 4)
+        {
+            Plugin.DebugMessage($"Didn't have enough colors ({colors.Count}, wants {count}), trying {additionalBuckets} additional buckets...");
+            colors = histogramPaletteBuilder.BinPixels(5 + additionalBuckets);
+        }
+        colors.Sort(new ColorVibrancyComparer());
+        
+        Color saberAColor = colors[0];
         colors.RemoveAt(0);
         
         Color saberBColor = Color.magenta; // rider get off my ass
@@ -294,14 +294,14 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         for (int i = 0; i < colors.Count; i++)
         {
             float diff = Config.PreferHueDifference
-                ? (float)GetHueDifference(saberAColor, colors[i].UnityColor) * 1000
-                : GetYiqDifference(saberAColor, colors[i].UnityColor);
+                ? (float)GetHueDifference(saberAColor, colors[i]) * 1000
+                : GetYiqDifference(saberAColor, colors[i]);
             
             if (diff > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
             {
-                if (!Config.PreferHueDifference || (Config.PreferHueDifference && colors[i].UnityColor.GetSaturation() < 0.1))
+                if (!Config.PreferHueDifference || (Config.PreferHueDifference && colors[i].GetSaturation() < 0.1))
                 {
-                    saberBColor = colors[i].UnityColor;
+                    saberBColor = colors[i];
                     colors.RemoveAt(i);
                     break;   
                 }
@@ -310,7 +310,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             // ReSharper disable once InvertIf
             if (diff > mostDifferentValue)
             {
-                saberBColor = colors[i].UnityColor;
+                saberBColor = colors[i];
                 mostDifferentValue = diff;
             }
         }
@@ -323,9 +323,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             saberBColor = x;
         }
             
-        Color boostAColor = colors[0].UnityColor;
+        Color boostAColor = colors[0];
         colors.RemoveAt(0);
-        Color boostBColor = colors[0].UnityColor;
+        Color boostBColor = colors[0];
         colors.RemoveAt(0);
         if (SwapColors(boostAColor, boostBColor))
         {
@@ -334,11 +334,11 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             boostAColor = y;
             boostBColor = x;
         }
-            
-        colors.Sort(new QuantizedColorYiqComparer());
-            
-        Color lightAColor = colors[0].UnityColor;
-        Color lightBColor = colors[1].UnityColor;
+        
+        colors.Sort(new ColorYiqComparer());
+        
+        Color lightAColor = colors[0];
+        Color lightBColor = colors[1];
         if (SwapColors(lightAColor, lightBColor))
         {
             Color x = lightAColor;
