@@ -93,13 +93,8 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     {
         public int Compare(Color x, Color y)
         {
-            float xMin = x.MinColorComponent();
-            float xMax = Mathf.Max(x.maxColorComponent, 0.001f);
-            float yMin = y.MinColorComponent();
-            float yMax = Mathf.Max(y.maxColorComponent, 0.001f);
-            
-            float xVibrancy = ((xMax + xMin) * (xMax - xMin)) / xMax;
-            float yVibrancy = ((yMax + yMin) * (yMax - yMin)) / yMax;
+            float xVibrancy = x.GetVibrancy();
+            float yVibrancy = y.GetVibrancy();
             
             switch (true)
             {
@@ -135,6 +130,11 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                     diffX = x.GetValue();
                     diffY = y.GetValue();
                     break;
+                
+                case "Vibrancy":
+                    diffX = x.GetVibrancy();
+                    diffY = y.GetVibrancy();
+                    break;
             }
 
             switch (true)
@@ -153,6 +153,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     private static float GetYiqDifference(Color x, Color y) => Mathf.Abs(x.GetYiq() - y.GetYiq());
     private static double GetHueDifference(Color x, Color y) => Math.Sin(Math.Abs(x.GetHue() - y.GetHue()) / 2 * Rad2Deg) * 1000;
     private static float GetValueDifference(Color x, Color y) => Mathf.Abs(x.GetValue() - y.GetValue()) * 1000;
+    private static float GetVibrancyDifference(Color x, Color y) => Mathf.Abs(x.GetVibrancy() - y.GetVibrancy()) * 1000;
     private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
 
 #if PRE_V1_37_1
@@ -317,12 +318,14 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                 case "Contrast": diff = GetYiqDifference(saberAColor, colors[i]); break;
                 case "Hue": diff = (float)GetHueDifference(saberAColor, colors[i]); break;
                 case "Value": diff = GetValueDifference(saberAColor, colors[i]); break;
+                case "Vibrancy": diff = GetVibrancyDifference(saberAColor, colors[i]); break;
             }
             
             if (diff > (SavedConfigInstance?.MinimumContrastDifference ?? Config.MinimumContrastDifference))
             {
                 if (Config.DifferenceTypePreference == "Contrast" ||
                     Config.DifferenceTypePreference == "Value" ||
+                    Config.DifferenceTypePreference == "Vibrancy" ||
                     (Config.DifferenceTypePreference == "Hue" && colors[i].GetSaturation() < 0.1))
                 {
                     saberBColor = colors[i];

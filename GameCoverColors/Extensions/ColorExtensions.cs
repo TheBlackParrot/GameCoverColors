@@ -46,4 +46,12 @@ public static class Color
     }
 
     public static float GetValue(this UnityEngine.Color color) => Mathf.Max(Mathf.Max(color.r, color.g), color.b);
+
+    public static float GetVibrancy(this UnityEngine.Color color)
+    {
+        float min = color.MinColorComponent();
+        float max = Mathf.Max(color.maxColorComponent, 0.001f);
+            
+        return (max + min) * (max - min) / max;
+    }
 }
