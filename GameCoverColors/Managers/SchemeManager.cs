@@ -446,7 +446,12 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         {
             return;
         }
-        
+
+        if (Colors != null)
+        {
+            Colors._obstaclesColor = __instance.colorScheme.obstaclesColor;
+        }
+
         __instance.usingOverrideColorScheme = true;
         __instance.colorScheme = Colors;
 #if PRE_V1_37_1
