@@ -24,7 +24,7 @@ internal class PluginConfig
     public virtual bool FlipLightColors { get; set; } = false;
     public virtual bool FlipBoostColors { get; set; } = false;
     public virtual bool FlipLightSchemes { get; set; } = false;
-    public virtual string DifferenceTypePreference { get; set; } = "Contrast";
+    public virtual string DifferenceTypePreference { get; set; } = "YIQ (Luma)";
 }
 
 [JsonObject(MemberSerialization.OptIn)]

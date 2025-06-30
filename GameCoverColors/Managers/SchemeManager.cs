@@ -121,6 +121,11 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                     diffX = x.GetSaturation();
                     diffY = y.GetSaturation();
                     break;
+                
+                case "Value * Saturation":
+                    diffX = x.GetValue() * x.GetSaturation();
+                    diffY = y.GetValue() * y.GetSaturation();
+                    break;
             }
             
             return diffX > diffY ? -1 : (diffX < diffY ? 1 : 0);
@@ -133,6 +138,8 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     private static float GetValueDifference(Color x, Color y) => Mathf.Abs(x.GetValue() - y.GetValue()) * 1000;
     private static float GetVibrancyDifference(Color x, Color y) => Mathf.Abs(x.GetVibrancy() - y.GetVibrancy()) * 1000;
     private static float GetSaturationDifference(Color x, Color y) => Mathf.Abs(x.GetSaturation() - y.GetSaturation()) * 1000;
+    private static float GetValueAndSaturationDifference(Color x, Color y) =>
+        Mathf.Abs((x.GetValue() * x.GetSaturation()) - (y.GetValue() * y.GetSaturation())) * 1000;
     private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
 
 #if PRE_V1_37_1
@@ -282,6 +289,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         }
 
         colors.Sort(new ColorComparer());
+#if DEBUG
+        await File.WriteAllLinesAsync("UserData/GameCoverColors/palette.txt", colors.Select(x => $"{x.r} {x.g} {x.b}"));
+#endif
         
         Color saberAColor = colors[0];
         colors.RemoveAt(0);
@@ -299,6 +309,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
                 case "Hue": diff = (float)GetHueDifference(saberAColor, colors[i]); break;
                 case "Saturation": diff = GetSaturationDifference(saberAColor, colors[i]); break;
                 case "Value": diff = GetValueDifference(saberAColor, colors[i]); break;
+                case "Value * Saturation": diff = GetValueAndSaturationDifference(saberAColor, colors[i]); break;
                 case "Vibrancy": diff = GetVibrancyDifference(saberAColor, colors[i]); break;
             }
             

@@ -242,7 +242,7 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     
     [UIValue("DifferenceTypePreferenceChoices")]
     [UsedImplicitly]
-    private object[] _differenceTypePreferenceChoices = ["Hue", "Saturation", "Value", "Vibrancy", "YIQ (Luma)"];
+    private object[] _differenceTypePreferenceChoices = ["Hue", "Saturation", "Value", "Value * Saturation", "Vibrancy", "YIQ (Luma)"];
     
     protected string DifferenceTypePreference
     {
