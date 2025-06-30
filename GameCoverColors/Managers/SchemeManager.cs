@@ -190,6 +190,65 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         _ = BeatmapDidUpdateContent(viewController, contentType);
     }
 
+    private static Color GrabNextColor(Color checkedColor, ref List<Color> colors)
+    {
+        Color nextColor = Color.magenta;
+        float mostDifferentValue = 0;
+        int mostDifferentIndex = 0;
+        bool foundMatchingColor = false;
+        string differenceType = SavedConfigInstance?.DifferenceTypePreference ?? Config.DifferenceTypePreference;
+        
+        for (int i = 0; i < colors.Count; i++)
+        {
+            float diff = 0;
+            switch (differenceType)
+            {
+                case "YIQ (Luma)": diff = GetYiqDifference(checkedColor, colors[i]); break;
+                case "Hue": diff = (float)GetHueDifference(checkedColor, colors[i]); break;
+                case "Saturation": diff = GetSaturationDifference(checkedColor, colors[i]); break;
+                case "Value": diff = GetValueDifference(checkedColor, colors[i]); break;
+                case "Value * Saturation": diff = GetValueAndSaturationDifference(checkedColor, colors[i]); break;
+                case "Vibrancy": diff = GetVibrancyDifference(checkedColor, colors[i]); break;
+            }
+            
+            if (diff > (SavedConfigInstance?.MinimumDifference ?? Config.MinimumDifference))
+            {
+                if (differenceType == "Hue")
+                {
+                    if (colors[i].GetSaturation() < 0.1)
+                    {
+                        nextColor = colors[i];
+                        colors.RemoveAt(i);
+                        foundMatchingColor = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    nextColor = colors[i];
+                    colors.RemoveAt(i);
+                    foundMatchingColor = true;
+                    break;
+                }
+            }
+            
+            // ReSharper disable once InvertIf
+            if (diff > mostDifferentValue)
+            {
+                nextColor = colors[i];
+                mostDifferentValue = diff;
+                mostDifferentIndex = i;
+            }
+        }
+
+        if (!foundMatchingColor)
+        {
+            colors.RemoveAt(mostDifferentIndex);
+        }
+
+        return nextColor;
+    }
+
     // https://github.com/WentTheFox/BSDataPuller/blob/0e5349e59a39a28be26e4bb6027d72948fff6eac/Core/MapEvents.cs#L395
     internal static async Task BeatmapDidUpdateContent(StandardLevelDetailViewController viewController,
         StandardLevelDetailViewController.ContentType contentType,
@@ -279,16 +338,15 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 
         HistogramPaletteBuilder histogramPaletteBuilder = new(readableTexture);
         int count = SavedConfigInstance?.PaletteSize ?? Config.PaletteSize;
-        string differenceType = SavedConfigInstance?.DifferenceTypePreference ?? Config.DifferenceTypePreference;
-        List<Color> colors = [];
         
+        List<Color> colors = [];
         for (int additionalBuckets = 0; colors.Count < count && additionalBuckets < 32; additionalBuckets += 4)
         {
             colors = histogramPaletteBuilder.BinPixels(4 + additionalBuckets).Take(count).ToList();
             Plugin.DebugMessage($"Got {colors.Count} colors with {4 + additionalBuckets} buckets (wants {count} colors)");
         }
-
         colors.Sort(new ColorComparer());
+        
 #if DEBUG
         await File.WriteAllLinesAsync("UserData/GameCoverColors/palette.txt", colors.Select(x => $"{x.r} {x.g} {x.b}"));
 #endif
@@ -296,49 +354,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         Color saberAColor = colors[0];
         colors.RemoveAt(0);
         
-        Color saberBColor = Color.magenta; // rider get off my ass
-
-        float mostDifferentValue = 0;
-        
-        for (int i = 0; i < colors.Count; i++)
-        {
-            float diff = 0;
-            switch (differenceType)
-            {
-                case "YIQ (Luma)": diff = GetYiqDifference(saberAColor, colors[i]); break;
-                case "Hue": diff = (float)GetHueDifference(saberAColor, colors[i]); break;
-                case "Saturation": diff = GetSaturationDifference(saberAColor, colors[i]); break;
-                case "Value": diff = GetValueDifference(saberAColor, colors[i]); break;
-                case "Value * Saturation": diff = GetValueAndSaturationDifference(saberAColor, colors[i]); break;
-                case "Vibrancy": diff = GetVibrancyDifference(saberAColor, colors[i]); break;
-            }
-            
-            if (diff > (SavedConfigInstance?.MinimumDifference ?? Config.MinimumDifference))
-            {
-                if (differenceType == "Hue")
-                {
-                    if (colors[i].GetSaturation() < 0.1)
-                    {
-                        saberBColor = colors[i];
-                        colors.RemoveAt(i);
-                        break;
-                    }
-                }
-                else
-                {
-                    saberBColor = colors[i];
-                    colors.RemoveAt(i);
-                    break;
-                }
-            }
-            
-            // ReSharper disable once InvertIf
-            if (diff > mostDifferentValue)
-            {
-                saberBColor = colors[i];
-                mostDifferentValue = diff;
-            }
-        }
+        Color saberBColor = GrabNextColor(saberAColor, ref colors);
 
         if (SwapColors(saberAColor, saberBColor))
         {
@@ -350,8 +366,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             
         Color boostAColor = colors[0];
         colors.RemoveAt(0);
-        Color boostBColor = colors[0];
-        colors.RemoveAt(0);
+        
+        Color boostBColor = GrabNextColor(boostAColor, ref colors);
+
         if (SwapColors(boostAColor, boostBColor))
         {
             Color x = boostAColor;
@@ -360,10 +377,11 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             boostBColor = x;
         }
         
-        colors.Sort(new ColorComparer());
-        
         Color lightAColor = colors[0];
-        Color lightBColor = colors[1];
+        colors.RemoveAt(0);
+        
+        Color lightBColor = GrabNextColor(lightAColor, ref colors);
+
         if (SwapColors(lightAColor, lightBColor))
         {
             Color x = lightAColor;
