@@ -67,7 +67,7 @@
 
     <horizontal><text text="-----" color="#00000000" font-size="3"/></horizontal>
 
-    <dropdown-list-setting value="DifferenceTypePreference" apply-on-change="true"
+    <dropdown-list-setting value="DifferenceTypePreference" apply-on-change="true" bind-value="true"
                            text="Color Difference Method" choices="DifferenceTypePreferenceChoices"
                            hover-hint="Comparer to determine differences in color"/>
 

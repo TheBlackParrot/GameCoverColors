@@ -23,7 +23,7 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void NotifyPropertyChanged([CallerMemberName] string? propertyName = null) =>
+    internal void NotifyPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     internal void NotifyPropertiesChanged()
@@ -67,7 +67,7 @@ internal class SettingsViewController : IInitializable, IDisposable, INotifyProp
     
     [UIValue("MinNoteContrastDiffText")]
     [UsedImplicitly]
-    internal string MinNoteContrastDiffText => $"Note {Config.DifferenceTypePreference} Difference";
+    internal string MinNoteContrastDiffText => $"{SavedConfigInstance?.DifferenceTypePreference ?? Config.DifferenceTypePreference} Difference";
     // ReSharper restore FieldCanBeMadeReadOnly.Global
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 

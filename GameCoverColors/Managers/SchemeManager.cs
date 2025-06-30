@@ -156,6 +156,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         if (!File.Exists(overrideFilename))
         {
             SettingsViewController.Instance?.NotifyPropertiesChanged();
+            SettingsViewController.Instance?.NotifyPropertyChanged(nameof(SettingsViewController.MinNoteContrastDiffText));
             return;
         }
         
@@ -169,6 +170,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         }
 
         SettingsViewController.Instance?.NotifyPropertiesChanged();
+        SettingsViewController.Instance?.NotifyPropertyChanged(nameof(SettingsViewController.MinNoteContrastDiffText));
     }
 
 #if PRE_V1_37_1
