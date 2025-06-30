@@ -450,10 +450,6 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
         if (Colors != null)
         {
             Colors._obstaclesColor = __instance.colorScheme.obstaclesColor;
-#if V1_40_3
-            Colors._overrideLights = __instance.colorScheme.overrideLights;
-            Colors._overrideNotes = __instance.colorScheme.overrideNotes;
-#endif
         }
 
         __instance.usingOverrideColorScheme = true;
