@@ -11,6 +11,7 @@ internal class HistogramPaletteBuilder
 {
     private const int DimensionMax = 256;
     private readonly NativeArray<Color32> _pixels;
+    private const byte MaxByte = 255;
 
     // ReSharper disable once ConvertToPrimaryConstructor
     public HistogramPaletteBuilder(Texture2D texture)
@@ -18,12 +19,12 @@ internal class HistogramPaletteBuilder
         _pixels = texture.GetPixelData<Color32>(0);
     }
     
-    private static int GetKeyForPixel(Color pixel, int bucketsPerDimension) {
+    private static int GetKeyForPixel(Color32 pixel, int bucketsPerDimension) {
         int bucketSize = DimensionMax / bucketsPerDimension;
         
-        int redBucket = (int)Math.Round(Mathf.Min(pixel.r * 255, 255) / bucketSize);
-        int greenBucket = (int)Math.Round(Mathf.Min(pixel.g * 255, 255) / bucketSize);
-        int blueBucket = (int)Math.Round(Mathf.Min(pixel.b * 255, 255) / bucketSize);
+        int redBucket = (int)Math.Round((double)Math.Min(pixel[0], MaxByte) / bucketSize);
+        int greenBucket = (int)Math.Round((double)Math.Min(pixel[1], MaxByte) / bucketSize);
+        int blueBucket = (int)Math.Round((double)Math.Min(pixel[2], MaxByte) / bucketSize);
 
         return redBucket << 16 | greenBucket << 8 | blueBucket;
     }
@@ -48,7 +49,7 @@ internal class HistogramPaletteBuilder
     {
         Dictionary<int, List<Color>> bucketMap = new();
         
-        foreach (Color pixel in _pixels)
+        foreach (Color32 pixel in _pixels)
         {
             int key = GetKeyForPixel(pixel, bucketsPerDimension);
 
@@ -58,7 +59,7 @@ internal class HistogramPaletteBuilder
             }
             else
             {
-                bucketMap[key] = [pixel];
+                bucketMap[key] = [(Color)pixel];
             }
         }
 
