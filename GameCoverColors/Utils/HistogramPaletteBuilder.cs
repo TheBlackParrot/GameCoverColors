@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+#if !V1_29_1
 using Unity.Collections;
+#endif
 using UnityEngine;
 
 namespace GameCoverColors.Utils;
@@ -10,13 +12,21 @@ namespace GameCoverColors.Utils;
 internal class HistogramPaletteBuilder
 {
     private const int DimensionMax = 256;
+#if V1_29_1
+    private readonly Color32[] _pixels;
+#else
     private readonly NativeArray<Color32> _pixels;
+#endif
     private const byte MaxByte = 255;
 
     // ReSharper disable once ConvertToPrimaryConstructor
     public HistogramPaletteBuilder(Texture2D texture)
     {
+#if V1_29_1
+        _pixels = texture.GetPixels32();
+#else
         _pixels = texture.GetPixelData<Color32>(0);
+#endif
     }
     
     private static int GetKeyForPixel(Color32 pixel, int bucketsPerDimension) {
