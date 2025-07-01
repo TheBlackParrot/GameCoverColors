@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using UnityEngine;
 
 namespace GameCoverColors.Utils;
@@ -9,22 +10,22 @@ namespace GameCoverColors.Utils;
 internal class HistogramPaletteBuilder
 {
     private const int DimensionMax = 256;
-    private readonly Color[] _pixels;
+    private readonly NativeArray<Color32> _pixels;
 
     // ReSharper disable once ConvertToPrimaryConstructor
     public HistogramPaletteBuilder(Texture2D texture)
     {
-        _pixels = texture.GetPixels();
+        _pixels = texture.GetPixelData<Color32>(0);
     }
     
-    private static string GetKeyForPixel(Color pixel, int bucketsPerDimension) {
+    private static int GetKeyForPixel(Color pixel, int bucketsPerDimension) {
         int bucketSize = DimensionMax / bucketsPerDimension;
         
-        double redBucket = Math.Round(Mathf.Min(pixel.r * 255, 255) / bucketSize);
-        double greenBucket = Math.Round(Mathf.Min(pixel.g * 255, 255) / bucketSize);
-        double blueBucket = Math.Round(Mathf.Min(pixel.b * 255, 255) / bucketSize);
-        
-        return redBucket + ":" + greenBucket + ":" + blueBucket;
+        int redBucket = (int)Math.Round(Mathf.Min(pixel.r * 255, 255) / bucketSize);
+        int greenBucket = (int)Math.Round(Mathf.Min(pixel.g * 255, 255) / bucketSize);
+        int blueBucket = (int)Math.Round(Mathf.Min(pixel.b * 255, 255) / bucketSize);
+
+        return redBucket << 16 | greenBucket << 8 | blueBucket;
     }
 
     private static Color ComputeAverageColor(List<Color> pixels)
@@ -45,11 +46,11 @@ internal class HistogramPaletteBuilder
     
     public List<Color> BinPixels(int bucketsPerDimension)
     {
-        Dictionary<string, List<Color>> bucketMap = new();
+        Dictionary<int, List<Color>> bucketMap = new();
         
         foreach (Color pixel in _pixels)
         {
-            string key = GetKeyForPixel(pixel, bucketsPerDimension);
+            int key = GetKeyForPixel(pixel, bucketsPerDimension);
 
             if (bucketMap.ContainsKey(key))
             {
