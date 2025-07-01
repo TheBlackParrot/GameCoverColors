@@ -14,13 +14,12 @@
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release-1.39.1' ">
-      <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
-    </PropertyGroup>
+    <PropertyGroup>
+        <DebugSymbols Condition="$(Configuration.Contains('Release'))">false</DebugSymbols>
+        <DebugSymbols Condition="$(Configuration.Contains('Debug'))">true</DebugSymbols>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug-1.39.1' ">
-      <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
-      <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+        <Optimize Condition="$(Configuration.Contains('Release'))">true</Optimize>
+        <Optimize Condition="$(Configuration.Contains('Debug'))">false</Optimize>
     </PropertyGroup>
 
     <ItemGroup>
