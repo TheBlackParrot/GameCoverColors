@@ -91,11 +91,18 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     
     private class ColorComparer : IComparer<Color>
     {
+        private readonly string? _forceSortType;
+        // ReSharper disable once ConvertToPrimaryConstructor
+        public ColorComparer(string? forceSortType = null)
+        {
+            _forceSortType = forceSortType;
+        }
+        
         public int Compare(Color x, Color y)
         {
             float diffX = 0;
             float diffY = 0;
-            switch (SavedConfigInstance?.DifferenceTypePreference ?? Config.DifferenceTypePreference)
+            switch (_forceSortType ?? SavedConfigInstance?.DifferenceTypePreference ?? Config.DifferenceTypePreference)
             {
                 case "YIQ (Luma)":
                     diffX = x.GetYiq();
@@ -140,7 +147,14 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
     private static float GetSaturationDifference(Color x, Color y) => Mathf.Abs(x.GetSaturation() - y.GetSaturation()) * 1000;
     private static float GetValueAndSaturationDifference(Color x, Color y) =>
         Mathf.Abs((x.GetValue() * x.GetSaturation()) - (y.GetValue() * y.GetSaturation())) * 1000;
-    private static bool SwapColors(Color x, Color y) => x.GetYiq() < y.GetYiq();
+
+    private static void SwapColors(ref Color x, ref Color y)
+    {
+        if (x.GetYiq() < y.GetYiq())
+        {
+            (x, y) = (y, x);
+        }   
+    }
 
 #if PRE_V1_37_1
     private static void LoadOverrides(IPreviewBeatmapLevel beatmapLevel)
@@ -194,7 +208,7 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 
     private static Color GrabNextColor(Color checkedColor, ref List<Color> colors)
     {
-        Color nextColor = Color.magenta;
+        Color nextColor = Color.black;
         float mostDifferentValue = 0;
         int mostDifferentIndex = 0;
         bool foundMatchingColor = false;
@@ -215,39 +229,27 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             
             if (diff > (SavedConfigInstance?.MinimumDifference ?? Config.MinimumDifference))
             {
-                if (differenceType == "Hue")
-                {
-                    if (colors[i].GetSaturation() < 0.1)
-                    {
-                        nextColor = colors[i];
-                        colors.RemoveAt(i);
-                        foundMatchingColor = true;
-                        break;
-                    }
-                }
-                else
-                {
-                    nextColor = colors[i];
-                    colors.RemoveAt(i);
-                    foundMatchingColor = true;
-                    break;
-                }
+                nextColor = colors[i];
+                colors.RemoveAt(i);
+                foundMatchingColor = true;
+                break;
             }
             
             // ReSharper disable once InvertIf
             if (diff > mostDifferentValue)
             {
-                nextColor = colors[i];
                 mostDifferentValue = diff;
                 mostDifferentIndex = i;
             }
         }
 
-        if (!foundMatchingColor)
+        if (foundMatchingColor)
         {
-            colors.RemoveAt(mostDifferentIndex);
+            return nextColor;
         }
-
+        
+        nextColor = colors[mostDifferentIndex];
+        colors.RemoveAt(mostDifferentIndex);
         return nextColor;
     }
 
@@ -347,50 +349,31 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
             colors = histogramPaletteBuilder.BinPixels(4 + additionalBuckets).Take(count).ToList();
             Plugin.DebugMessage($"Got {colors.Count} colors with {4 + additionalBuckets} buckets (wants {count} colors)");
         }
-        colors.Sort(new ColorComparer());
         
 #if DEBUG
         await File.WriteAllLinesAsync("UserData/GameCoverColors/palette.txt", colors.Select(x => $"{x.r} {x.g} {x.b}"));
 #endif
         
+        colors.Sort(new ColorComparer("Value * Saturation"));
+        
         Color saberAColor = colors[0];
         colors.RemoveAt(0);
         
+        colors.Sort(new ColorComparer());
+        
         Color saberBColor = GrabNextColor(saberAColor, ref colors);
-
-        if (SwapColors(saberAColor, saberBColor))
-        {
-            Color x = saberAColor;
-            Color y = saberBColor;
-            saberAColor = y;
-            saberBColor = x;
-        }
             
         Color boostAColor = colors[0];
         colors.RemoveAt(0);
-        
         Color boostBColor = GrabNextColor(boostAColor, ref colors);
-
-        if (SwapColors(boostAColor, boostBColor))
-        {
-            Color x = boostAColor;
-            Color y = boostBColor;
-            boostAColor = y;
-            boostBColor = x;
-        }
         
         Color lightAColor = colors[0];
         colors.RemoveAt(0);
-        
         Color lightBColor = GrabNextColor(lightAColor, ref colors);
-
-        if (SwapColors(lightAColor, lightBColor))
-        {
-            Color x = lightAColor;
-            Color y = lightBColor;
-            lightAColor = y;
-            lightBColor = x;
-        }
+        
+        SwapColors(ref saberAColor, ref saberBColor);
+        SwapColors(ref boostAColor, ref boostBColor);
+        SwapColors(ref lightAColor, ref lightBColor);
             
         Colors = new ColorScheme(
             "GameCoverColorsScheme",
