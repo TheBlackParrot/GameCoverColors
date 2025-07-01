@@ -150,7 +150,9 @@ internal class SchemeManager : IInitializable, IDisposable, IAffinity
 
     private static void SwapColors(ref Color x, ref Color y)
     {
-        if (x.GetYiq() < y.GetYiq())
+        if ((SavedConfigInstance?.DifferenceTypePreference ?? Config.DifferenceTypePreference) == "Hue"
+                ? x.GetHue() < y.GetHue()
+                : x.GetYiq() < y.GetYiq())
         {
             (x, y) = (y, x);
         }   
